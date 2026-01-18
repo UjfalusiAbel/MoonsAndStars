@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MoonsAndStars.Assets.Code.Scripts.Planets.Models;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace MoonsAndStars.Assets.Code.Scripts.Planets
@@ -24,17 +25,14 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
         };
         private const float GOLDEN_RATIO = 1.618033988749f;
 
-        public static int[] GetStarterTriangles
+        private int[] GetTrianglesAsIntArray(List<Triangle> triangles)
         {
-            get
+            List<int> intArray = new List<int>();
+            foreach (var triangle in triangles)
             {
-                List<int> triangles = new List<int>();
-                foreach (var triangle in m_startTriangles)
-                {
-                    triangles.AddRange(triangle.PointIndices);
-                }
-                return triangles.ToArray();
+                intArray.AddRange(triangle.PointIndices);
             }
+            return intArray.ToArray();
         }
 
         public static List<Vector3> GenerateInitialVertices(float meshSize)
@@ -79,16 +77,36 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
 
         public void GenerateMesh()
         {
-            var vertices = GenerateInitialVertices(1f);
+            var initialVertices = GenerateInitialVertices(2f);
+            for (int i = 0; i < initialVertices.Count; i++)
+            {
+                initialVertices[i].Normalize();
+            }
+
+            var vertices = GenerateInitialVertices(2f);
+            var triangles = m_startTriangles.ToList();
+
+            foreach (var triangle in m_startTriangles)
+            {
+                var triVertices = new Vector3[] { initialVertices[triangle.A], initialVertices[triangle.B], initialVertices[triangle.C] };
+                var result = DivideTriangle(triangle, triVertices, vertices.Count - 1);
+                vertices.AddRange(result.Item1);
+                triangles.Remove(triangle);
+                triangles.AddRange(result.Item2);
+            }
+
+            Debug.Log(JsonConvert.SerializeObject(triangles));
+
+
             Vector2[] uvs = new Vector2[vertices.Count];
-            for (int i = 0; i < uvs.Length; i++)
+            for (int i = 0; i < vertices.Count; i++)
             {
                 uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
             }
 
             Mesh mesh = new Mesh();
             mesh.vertices = vertices.ToArray();
-            mesh.triangles = GetStarterTriangles;
+            mesh.triangles = GetTrianglesAsIntArray(triangles);
             mesh.uv = uvs;
 
             var index = 0;
@@ -107,6 +125,21 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             filters[0].mesh = mesh;
         }
 
+        private Tuple<List<Vector3>, List<Triangle>> DivideTriangle(Triangle triangle, Vector3[] vectors, int lastTriangle)
+        {
+            List<Triangle> divisions = new List<Triangle>();
 
+            var ab = Vector3.Slerp(vectors[0], vectors[1], 0.5f);
+            var ac = Vector3.Slerp(vectors[0], vectors[2], 0.5f);
+            var bc = Vector3.Slerp(vectors[1], vectors[2], 0.5f);
+            List<Vector3> newPoints = new List<Vector3>() { ab, ac, bc };
+
+            divisions.Add(new Triangle(triangle.A, lastTriangle + 1, lastTriangle + 2));
+            divisions.Add(new Triangle(lastTriangle + 1, triangle.B, lastTriangle + 3));
+            divisions.Add(new Triangle(lastTriangle + 2, lastTriangle + 3, triangle.C));
+            divisions.Add(new Triangle(lastTriangle + 3, lastTriangle + 2, lastTriangle + 1));
+
+            return new(newPoints, divisions);
+        }
     }
 }
