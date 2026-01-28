@@ -153,6 +153,8 @@ MonoBehaviour:
   - {fileID: 1573649362}
   - {fileID: 1846342035}
   ball: {fileID: 2430731660425764239, guid: 5de6ab398feeb8e0d993d092228ed206, type: 3}
+  m_ballHolder: {fileID: 1406066373}
+  m_resolution: 3
 --- !u!4 &261942532
 Transform:
   m_ObjectHideFlags: 0
@@ -481,6 +483,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1406066372
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1406066373}
+  m_Layer: 0
+  m_Name: Spheres
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1406066373
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1406066372}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 23.40375, y: -1.3413, z: 3.25908}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1573649361
 GameObject:
   m_ObjectHideFlags: 0
@@ -759,3 +792,4 @@ SceneRoots:
   - {fileID: 2007301480}
   - {fileID: 1573649363}
   - {fileID: 1846342036}
+  - {fileID: 1406066373}

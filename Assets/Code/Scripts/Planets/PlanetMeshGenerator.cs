@@ -14,6 +14,9 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
         private Mesh m_mesh;
         public List<MeshFilter> filters;
         public GameObject ball;
+        [SerializeField] private Transform m_ballHolder;
+
+        [SerializeField] private int m_resolution = 2;
 
         private readonly static Triangle[] m_startTriangles = new Triangle[]
         {
@@ -77,22 +80,24 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
 
         public void GenerateMesh()
         {
-            var initialVertices = GenerateInitialVertices(2f);
-            for (int i = 0; i < initialVertices.Count; i++)
+            var vertices = GenerateInitialVertices(2f);
+            for (int i = 0; i < vertices.Count; i++)
             {
-                initialVertices[i].Normalize();
+                vertices[i].Normalize();
             }
 
-            var vertices = GenerateInitialVertices(2f);
             var triangles = m_startTriangles.ToList();
+            var cache = new Dictionary<long, int>();
+            var newTriangles = new List<Triangle>();
 
-            foreach (var triangle in m_startTriangles)
+            for (int i = 0; i < m_resolution; i++)
             {
-                var triVertices = new Vector3[] { initialVertices[triangle.A], initialVertices[triangle.B], initialVertices[triangle.C] };
-                var result = DivideTriangle(triangle, triVertices, vertices.Count - 1);
-                vertices.AddRange(result.Item1);
-                triangles.Remove(triangle);
-                triangles.AddRange(result.Item2);
+                foreach (var tri in triangles)
+                {
+                    newTriangles.AddRange(DivideTriangle(tri, vertices, cache));
+                }
+
+                triangles = new List<Triangle>(newTriangles);
             }
 
             Debug.Log(JsonConvert.SerializeObject(triangles));
@@ -112,7 +117,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             var index = 0;
             foreach (var vertex in vertices)
             {
-                var instance = Instantiate(ball);
+                var instance = Instantiate(ball, m_ballHolder);
                 instance.transform.position = vertex;
                 var tester = instance.AddComponent<TesterData>();
                 tester.number = index;
@@ -125,21 +130,42 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             filters[0].mesh = mesh;
         }
 
-        private Tuple<List<Vector3>, List<Triangle>> DivideTriangle(Triangle triangle, Vector3[] vectors, int lastTriangle)
+        private long GetPointKey(int a, int b)
+        {
+            return a < b ? ((long)a << 32) + b : ((long)b << 32) + a;
+        }
+
+        private int GetOrCreateMidpoint(int index1, int index2, List<Vector3> vertices, Dictionary<long, int> cache)
+        {
+            var key = GetPointKey(index1, index2);
+            Debug.Log($"Index1 = {index1} and index2 = {index2} and key = {key}");
+            if (cache.ContainsKey(key))
+            {
+                return cache[key];
+            }
+
+            Vector3 midpoint = Vector3.Slerp(vertices[index1], vertices[index2], 0.5f);
+            int newIndex = vertices.Count;
+            vertices.Add(midpoint);
+            cache.Add(key, newIndex);
+
+            return newIndex;
+        }
+
+        private List<Triangle> DivideTriangle(Triangle triangle, List<Vector3> vertices, Dictionary<long, int> cache)
         {
             List<Triangle> divisions = new List<Triangle>();
 
-            var ab = Vector3.Slerp(vectors[0], vectors[1], 0.5f);
-            var ac = Vector3.Slerp(vectors[0], vectors[2], 0.5f);
-            var bc = Vector3.Slerp(vectors[1], vectors[2], 0.5f);
-            List<Vector3> newPoints = new List<Vector3>() { ab, ac, bc };
+            var ab = GetOrCreateMidpoint(triangle.A, triangle.B, vertices, cache);
+            var bc = GetOrCreateMidpoint(triangle.B, triangle.C, vertices, cache);
+            var ca = GetOrCreateMidpoint(triangle.C, triangle.A, vertices, cache);
 
-            divisions.Add(new Triangle(triangle.A, lastTriangle + 1, lastTriangle + 2));
-            divisions.Add(new Triangle(lastTriangle + 1, triangle.B, lastTriangle + 3));
-            divisions.Add(new Triangle(lastTriangle + 2, lastTriangle + 3, triangle.C));
-            divisions.Add(new Triangle(lastTriangle + 3, lastTriangle + 2, lastTriangle + 1));
+            divisions.Add(new Triangle(triangle.A, ab, ca));
+            divisions.Add(new Triangle(triangle.B, bc, ab));
+            divisions.Add(new Triangle(triangle.C, ca, bc));
+            divisions.Add(new Triangle(ab, bc, ca));
 
-            return new(newPoints, divisions);
+            return divisions;
         }
     }
 }
