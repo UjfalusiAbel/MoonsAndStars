@@ -272,11 +272,11 @@ MonoBehaviour:
   m_recalculateDistances:
   - 50
   - 25
-  - 12
-  - 6
+  - 12.5
+  - 5
   - 3
-  - 1
-  m_radius: 100
+  - 2.5
+  m_radius: 200
   m_updateTime: 0.1
 --- !u!1 &410087039
 GameObject:
@@ -451,10 +451,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bc0349d477e597e297274b218132113, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoonsAndStars.Assets.Code.Scripts.Planets.MeshGenerator
-  m_meshData:
-    m_planetSize: 1
   m_resolution: 4
+  m_planetSize: 50
+  m_lodMinDivDistance: 0.25
   m_cameraObject: {fileID: 330585543}
+  m_lodDistance: 20
 --- !u!33 &566963040
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -557,10 +558,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bc0349d477e597e297274b218132113, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoonsAndStars.Assets.Code.Scripts.Planets.MeshGenerator
-  m_meshData:
-    m_planetSize: 1
   m_resolution: 4
+  m_planetSize: 50
+  m_lodMinDivDistance: 0.25
   m_cameraObject: {fileID: 330585543}
+  m_lodDistance: 20
 --- !u!33 &654961348
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -791,10 +793,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bc0349d477e597e297274b218132113, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoonsAndStars.Assets.Code.Scripts.Planets.MeshGenerator
-  m_meshData:
-    m_planetSize: 1
   m_resolution: 4
+  m_planetSize: 50
+  m_lodMinDivDistance: 0.25
   m_cameraObject: {fileID: 330585543}
+  m_lodDistance: 20
 --- !u!33 &1348254703
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1034,10 +1037,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bc0349d477e597e297274b218132113, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoonsAndStars.Assets.Code.Scripts.Planets.MeshGenerator
-  m_meshData:
-    m_planetSize: 1
   m_resolution: 4
+  m_planetSize: 50
+  m_lodMinDivDistance: 0.25
   m_cameraObject: {fileID: 330585543}
+  m_lodDistance: 20
 --- !u!33 &1912900275
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1196,10 +1200,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bc0349d477e597e297274b218132113, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoonsAndStars.Assets.Code.Scripts.Planets.MeshGenerator
-  m_meshData:
-    m_planetSize: 10
   m_resolution: 4
+  m_planetSize: 50
+  m_lodMinDivDistance: 0.25
   m_cameraObject: {fileID: 330585543}
+  m_lodDistance: 20
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

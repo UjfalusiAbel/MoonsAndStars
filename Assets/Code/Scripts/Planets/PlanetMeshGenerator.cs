@@ -10,13 +10,22 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
 {
     public class PlanetMeshGenerator : MonoBehaviour
     {
-        private PlanetMeshData m_meshData;
-        private Mesh m_mesh;
-        public List<MeshFilter> filters;
-        public GameObject ball;
-        [SerializeField] private Transform m_ballHolder;
-
+        [SerializeField] private PlanetMeshData m_meshData;
+        private MeshFilter m_filter;
         [SerializeField] private int m_resolution = 2;
+        [SerializeField] private GameObject m_cameraObject;
+        private float m_lodDistance = 2f;
+        public float SetRecalculateDistance
+        {
+            set
+            {
+                if (m_lodDistance != value)
+                {
+                    //CalculateLoD();
+                }
+                m_lodDistance = value;
+            }
+        }
 
         private readonly static Triangle[] m_startTriangles = new Triangle[]
         {
@@ -27,6 +36,17 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             new Triangle(7,3,8), new Triangle(8,3,11), new Triangle(7,0,3), new Triangle(11,2,8),
         };
         private const float GOLDEN_RATIO = 1.618033988749f;
+
+        public void Awake()
+        {
+            m_filter = GetComponent<MeshFilter>();
+        }
+
+        public void Start()
+        {
+            GenerateMesh();
+            GenerateCollider();
+        }
 
         private int[] GetTrianglesAsIntArray(List<Triangle> triangles)
         {
@@ -73,14 +93,9 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             return vertices;
         }
 
-        public void Start()
-        {
-            GenerateMesh();
-        }
-
         public void GenerateMesh()
         {
-            var vertices = GenerateInitialVertices(2f);
+            var vertices = GenerateInitialVertices(m_meshData.PlanetSize);
             for (int i = 0; i < vertices.Count; i++)
             {
                 vertices[i].Normalize();
@@ -94,14 +109,15 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             {
                 foreach (var tri in triangles)
                 {
-                    newTriangles.AddRange(DivideTriangle(tri, vertices, cache));
+                    DivideTriangle(tri, vertices, cache, newTriangles);
                 }
 
-                triangles = new List<Triangle>(newTriangles);
+                var temp = triangles;
+                triangles = newTriangles;
+                newTriangles = temp;
             }
 
             Debug.Log(JsonConvert.SerializeObject(triangles));
-
 
             Vector2[] uvs = new Vector2[vertices.Count];
             for (int i = 0; i < vertices.Count; i++)
@@ -114,20 +130,34 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             mesh.triangles = GetTrianglesAsIntArray(triangles);
             mesh.uv = uvs;
 
-            var index = 0;
-            foreach (var vertex in vertices)
-            {
-                var instance = Instantiate(ball, m_ballHolder);
-                instance.transform.position = vertex;
-                var tester = instance.AddComponent<TesterData>();
-                tester.number = index;
-                index++;
-            }
-
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
 
-            filters[0].mesh = mesh;
+            m_filter.mesh = mesh;
+        }
+
+        private void CalculateLoD(List<Triangle> triangles, List<Triangle> newTriangles, List<Vector3> vertices, Dictionary<long, int> cache, float admittedDistance)
+        {
+            var trianglesDivided = new HashSet<Triangle>();
+
+            bool wasChanged = false;
+
+            foreach (var tri in triangles)
+            {
+                if (Vector3.Distance(vertices[tri.A], m_cameraObject.transform.position) < admittedDistance)
+                {
+                    DivideTriangle(tri, vertices, cache, newTriangles);
+                    trianglesDivided.Add(tri);
+                    wasChanged = true;
+                }
+            }
+
+            if (wasChanged)
+            {
+
+                triangles.RemoveAll(t => trianglesDivided.Contains(t));
+                triangles.AddRange(newTriangles);
+            }
         }
 
         private long GetPointKey(int a, int b)
@@ -138,7 +168,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
         private int GetOrCreateMidpoint(int index1, int index2, List<Vector3> vertices, Dictionary<long, int> cache)
         {
             var key = GetPointKey(index1, index2);
-            Debug.Log($"Index1 = {index1} and index2 = {index2} and key = {key}");
+
             if (cache.ContainsKey(key))
             {
                 return cache[key];
@@ -152,20 +182,25 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             return newIndex;
         }
 
-        private List<Triangle> DivideTriangle(Triangle triangle, List<Vector3> vertices, Dictionary<long, int> cache)
+        private void DivideTriangle(Triangle triangle, List<Vector3> vertices, Dictionary<long, int> cache, List<Triangle> output)
         {
-            List<Triangle> divisions = new List<Triangle>();
-
             var ab = GetOrCreateMidpoint(triangle.A, triangle.B, vertices, cache);
             var bc = GetOrCreateMidpoint(triangle.B, triangle.C, vertices, cache);
             var ca = GetOrCreateMidpoint(triangle.C, triangle.A, vertices, cache);
 
-            divisions.Add(new Triangle(triangle.A, ab, ca));
-            divisions.Add(new Triangle(triangle.B, bc, ab));
-            divisions.Add(new Triangle(triangle.C, ca, bc));
-            divisions.Add(new Triangle(ab, bc, ca));
+            output.Add(new Triangle(triangle.A, ab, ca));
+            output.Add(new Triangle(triangle.B, bc, ab));
+            output.Add(new Triangle(triangle.C, ca, bc));
+            output.Add(new Triangle(ab, bc, ca));
+        }
 
-            return divisions;
+        private void GenerateCollider()
+        {
+            var collider = gameObject.AddComponent<MeshCollider>();
+            collider.enabled = true;
+            collider.sharedMesh = m_filter.mesh;
+            collider.convex = true;
+            collider.isTrigger = false;
         }
     }
 }

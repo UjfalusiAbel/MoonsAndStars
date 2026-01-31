@@ -8,9 +8,9 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets.Models
     [Serializable]
     public class PlanetMeshData
     {
-        [SerializeField]
-        private MeshParameters m_meshParams;
-        public List<Vector3> FinalPoints { get; set; }
-        public List<int> FinalTriangles { get; set; }
+        [SerializeField] private float m_planetSize = 1f;
+        public float PlanetSize => m_planetSize;
+        public List<Vector3> Points { get; set; }
+        public List<Triangle> Triangles { get; set; }
     }
 }
