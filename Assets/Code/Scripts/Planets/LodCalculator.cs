@@ -36,6 +36,9 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             while (Application.isPlaying)
             {
                 Collider[] hits = Physics.OverlapSphere(transform.position, m_radius);
+                
+                m_consideredGenerators.Clear();
+
                 foreach (Collider hit in hits)
                 {
                     if (hit.gameObject.tag == "Planet" && hit.TryGetComponent<PlanetMeshGenerator>(out var generator))

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MoonsAndStars.Assets.Code.Scripts.Planets.Models;
+using MoonsAndStars.Assets.Code.Scripts.Planets.Enums;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -14,20 +15,23 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
         private MeshFilter m_filter;
         [SerializeField] private int m_resolution = 2;
         [SerializeField] private GameObject m_cameraObject;
+        [SerializeField] private PlanetBaseType m_planetBase;
         private float m_lodDistance = 2f;
+        private Dictionary<long, int> m_cache = new Dictionary<long, int>();
         public float SetRecalculateDistance
         {
             set
             {
                 if (m_lodDistance != value)
                 {
-                    //CalculateLoD();
+                    CalculateLoD(m_meshData.Triangles, new List<Triangle>(), m_meshData.Vertices, m_lodDistance);
+                    ApplyChangesToMesh();
                 }
                 m_lodDistance = value;
             }
         }
 
-        private readonly static Triangle[] m_startTriangles = new Triangle[]
+        private readonly Triangle[] m_icoSphereTriangles = new Triangle[]
         {
             new Triangle(0,6,3), new Triangle(6,11,3), new Triangle(0,10,6), new Triangle(10,5,6),
             new Triangle(6,5,11), new Triangle(5,2,11), new Triangle(10,1,5), new Triangle(1,2,5),
@@ -35,6 +39,20 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             new Triangle(10,9,1), new Triangle(2,4,8), new Triangle(4,9,7), new Triangle(9,0,7),
             new Triangle(7,3,8), new Triangle(8,3,11), new Triangle(7,0,3), new Triangle(11,2,8),
         };
+
+        private readonly Triangle[] m_cubeSphereTriangles = new Triangle[]
+        {
+            
+        };
+
+        public Triangle[] GetStartTriangles
+        {
+            get
+            {
+                return m_planetBase == PlanetBaseType.Icosahedron ? m_icoSphereTriangles : m_cubeSphereTriangles;
+            }
+        }
+
         private const float GOLDEN_RATIO = 1.618033988749f;
 
         public void Awake()
@@ -95,58 +113,70 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
 
         public void GenerateMesh()
         {
-            var vertices = GenerateInitialVertices(m_meshData.PlanetSize);
-            for (int i = 0; i < vertices.Count; i++)
+            m_meshData.Vertices = GenerateInitialVertices(m_meshData.PlanetSize);
+            for (int i = 0; i < m_meshData.Vertices.Count; i++)
             {
-                vertices[i].Normalize();
+                m_meshData.Vertices[i] = m_meshData.Vertices[i].normalized;
             }
 
-            var triangles = m_startTriangles.ToList();
-            var cache = new Dictionary<long, int>();
+            m_meshData.Triangles = GetStartTriangles.ToList();
             var newTriangles = new List<Triangle>();
 
             for (int i = 0; i < m_resolution; i++)
             {
-                foreach (var tri in triangles)
+                newTriangles.Clear();
+                m_cache.Clear();
+
+                foreach (var tri in m_meshData.Triangles)
                 {
-                    DivideTriangle(tri, vertices, cache, newTriangles);
+                    DivideTriangle(tri, m_meshData.Vertices, newTriangles);
                 }
 
-                var temp = triangles;
-                triangles = newTriangles;
+                var temp = m_meshData.Triangles;
+                m_meshData.Triangles = newTriangles;
                 newTriangles = temp;
             }
 
-            Debug.Log(JsonConvert.SerializeObject(triangles));
+            Debug.Log(JsonConvert.SerializeObject(m_meshData.Triangles));
 
-            Vector2[] uvs = new Vector2[vertices.Count];
-            for (int i = 0; i < vertices.Count; i++)
-            {
-                uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
-            }
-
-            Mesh mesh = new Mesh();
-            mesh.vertices = vertices.ToArray();
-            mesh.triangles = GetTrianglesAsIntArray(triangles);
-            mesh.uv = uvs;
-
-            mesh.RecalculateBounds();
-            mesh.RecalculateNormals();
-
-            m_filter.mesh = mesh;
+            ApplyChangesToMesh();
         }
 
-        private void CalculateLoD(List<Triangle> triangles, List<Triangle> newTriangles, List<Vector3> vertices, Dictionary<long, int> cache, float admittedDistance)
+        private void ApplyChangesToMesh()
+        {
+
+            Vector2[] uvs = new Vector2[m_meshData.Vertices.Count];
+            for (int i = 0; i < m_meshData.Vertices.Count; i++)
+            {
+                uvs[i] = new Vector2(m_meshData.Vertices[i].x, m_meshData.Vertices[i].z);
+            }
+
+            if (m_filter.mesh == null)
+            {
+                m_filter.mesh = new Mesh();
+            }
+
+            m_filter.mesh.vertices = m_meshData.Vertices.ToArray();
+            m_filter.mesh.triangles = GetTrianglesAsIntArray(m_meshData.Triangles);
+            m_filter.mesh.uv = uvs;
+
+            m_filter.mesh.RecalculateBounds();
+            m_filter.mesh.RecalculateNormals();
+        }
+
+        private void CalculateLoD(List<Triangle> triangles, List<Triangle> newTriangles, List<Vector3> vertices, float admittedDistance)
         {
             var trianglesDivided = new HashSet<Triangle>();
 
             bool wasChanged = false;
+            m_cache.Clear();
 
             foreach (var tri in triangles)
             {
-                if (Vector3.Distance(vertices[tri.A], m_cameraObject.transform.position) < admittedDistance)
+                var triCenter = (vertices[tri.A] + vertices[tri.B] + vertices[tri.C]) / 3f;
+                if (Vector3.Distance(triCenter, m_cameraObject.transform.position) < admittedDistance)
                 {
-                    DivideTriangle(tri, vertices, cache, newTriangles);
+                    DivideTriangle(tri, vertices, newTriangles);
                     trianglesDivided.Add(tri);
                     wasChanged = true;
                 }
@@ -157,6 +187,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
 
                 triangles.RemoveAll(t => trianglesDivided.Contains(t));
                 triangles.AddRange(newTriangles);
+                Debug.Log(JsonConvert.SerializeObject(newTriangles));
             }
         }
 
@@ -165,28 +196,28 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             return a < b ? ((long)a << 32) + b : ((long)b << 32) + a;
         }
 
-        private int GetOrCreateMidpoint(int index1, int index2, List<Vector3> vertices, Dictionary<long, int> cache)
+        private int GetOrCreateMidpoint(int index1, int index2, List<Vector3> vertices)
         {
             var key = GetPointKey(index1, index2);
 
-            if (cache.ContainsKey(key))
+            if (m_cache.ContainsKey(key))
             {
-                return cache[key];
+                return m_cache[key];
             }
 
             Vector3 midpoint = Vector3.Slerp(vertices[index1], vertices[index2], 0.5f);
             int newIndex = vertices.Count;
             vertices.Add(midpoint);
-            cache.Add(key, newIndex);
+            m_cache.Add(key, newIndex);
 
             return newIndex;
         }
 
-        private void DivideTriangle(Triangle triangle, List<Vector3> vertices, Dictionary<long, int> cache, List<Triangle> output)
+        private void DivideTriangle(Triangle triangle, List<Vector3> vertices, List<Triangle> output)
         {
-            var ab = GetOrCreateMidpoint(triangle.A, triangle.B, vertices, cache);
-            var bc = GetOrCreateMidpoint(triangle.B, triangle.C, vertices, cache);
-            var ca = GetOrCreateMidpoint(triangle.C, triangle.A, vertices, cache);
+            var ab = GetOrCreateMidpoint(triangle.A, triangle.B, vertices);
+            var bc = GetOrCreateMidpoint(triangle.B, triangle.C, vertices);
+            var ca = GetOrCreateMidpoint(triangle.C, triangle.A, vertices);
 
             output.Add(new Triangle(triangle.A, ab, ca));
             output.Add(new Triangle(triangle.B, bc, ab));
