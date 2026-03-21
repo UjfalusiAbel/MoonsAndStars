@@ -10,13 +10,15 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets.Models
     {
         [SerializeField] private float m_planetSize = 1f;
         public float PlanetSize => m_planetSize;
-        public List<Vector3> Vertices { get; set; }
-        public List<Triangle> Triangles { get; set; }
+        public MeshFace[] MeshFaces { get; set; }
 
         public PlanetMeshData()
         {
-            Vertices = new List<Vector3>();
-            Triangles = new List<Triangle>();
+            MeshFaces = new MeshFace[6];
+            for (int i = 0; i < 6; i++)
+            {
+                MeshFaces[i] = new MeshFace();
+            }
         }
     }
 }
