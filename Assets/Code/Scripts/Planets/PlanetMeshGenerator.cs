@@ -12,11 +12,11 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
     public class PlanetMeshGenerator : MonoBehaviour
     {
         [SerializeField] private PlanetMeshData m_meshData;
-        private MeshFilter[] m_filters;
         [SerializeField] private int m_resolution = 2;
         [SerializeField] private GameObject m_cameraObject;
+        [SerializeField] private Material m_planetMaterial;
+        [SerializeField] private int m_maxLevel = 6;
         private float m_lodDistance = 2f;
-        private Dictionary<long, int> m_cache = new Dictionary<long, int>();
         private readonly Vector3[] m_directions = { Vector3.up, Vector3.down, Vector3.right, Vector3.left, Vector3.forward, Vector3.back };
         public float SetRecalculateDistance
         {
@@ -30,15 +30,9 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             }
         }
 
-        public void Awake()
-        {
-            m_filters = GetComponentsInChildren<MeshFilter>();
-        }
-
         public void Start()
         {
             GenerateMesh();
-            GenerateCollider();
         }
 
         private int[] GetTrianglesAsIntArray(List<Triangle> triangles)
@@ -68,7 +62,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             );
         }
 
-        private void GenerateFace(int index)
+        private Mesh GenerateFace(int index, QuadNode node)
         {
             var a = m_directions[index];
             var b = new Vector3(a.y, a.z, a.x);
@@ -83,8 +77,11 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
                 {
                     var percentX = x / (float)m_resolution;
                     var percentY = y / (float)m_resolution;
-                    var offsetB = (percentX - 0.5f) * 2f;
-                    var offsetC = (percentY - 0.5f) * 2f;
+
+                    Vector2 uv = new Vector2(Mathf.Lerp(node.GetMinCoords.x, node.GetMaxCoords.x, percentX), Mathf.Lerp(node.GetMinCoords.y, node.GetMaxCoords.y, percentY));
+
+                    var offsetB = (uv.x - 0.5f) * 2f;
+                    var offsetC = (uv.y - 0.5f) * 2f;
 
                     var vertexOnCube = a + offsetB * b + offsetC * c;
                     var vertexOnSphere = CubeToSphere(vertexOnCube);
@@ -107,55 +104,119 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
                 }
             }
 
-            m_meshData.MeshFaces[index].Vertices = vertices;
-            m_meshData.MeshFaces[index].Triangles = triangles;
+            Mesh mesh = new Mesh();
+            mesh.vertices = vertices.ToArray();
+            mesh.triangles = GetTrianglesAsIntArray(triangles);
+            Vector3[] normals = new Vector3[vertices.Count];
+
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                normals[i] = vertices[i].normalized;
+            }
+
+            mesh.normals = normals;
+
+            return mesh;
         }
 
         public void GenerateMesh()
         {
-            for (int i = 0; i < m_filters.Length; i++)
+            m_meshData.Roots = new QuadNode[6];
+
+            for (int i = 0; i < 6; i++)
             {
-                if (m_filters[i].mesh != null)
+                var root = new QuadNode(Vector2.zero, Vector2.one, 0, transform, m_planetMaterial);
+
+                var mesh = GenerateFace(i, root);
+                root.GetMeshFilter.mesh = mesh;
+                root.GetMeshCollider.sharedMesh = mesh;
+                m_meshData.Roots[i] = root;
+            }
+        }
+
+
+        public void UpdateLod()
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                UpdateLodRecursive(i, m_meshData.Roots[i]);
+            }
+        }
+
+        private void UpdateLodRecursive(int faceIndex, QuadNode node)
+        {
+            Vector2 centerUV = (node.GetMinCoords + node.GetMaxCoords) * 0.5f;
+
+            var a = m_directions[faceIndex];
+            var b = new Vector3(a.y, a.z, a.x);
+            var c = Vector3.Cross(b, a);
+
+            float offsetB = (centerUV.x - 0.5f) * 2f;
+            float offsetC = (centerUV.y - 0.5f) * 2f;
+
+            Vector3 cube = a + offsetB * b + offsetC * c;
+            Vector3 sphere = CubeToSphere(cube) * m_meshData.PlanetSize;
+
+            float dist = Vector3.Distance(m_cameraObject.transform.position, sphere);
+            float threshold = m_lodDistance / (node.GetLevel + 1);
+
+            if (dist < threshold && node.GetLevel < m_maxLevel)
+            {
+                SubdivideMesh(faceIndex, node);
+
+                if (!node.IsLeaf)
                 {
-                    m_filters[i].mesh = new Mesh();
+                    foreach (var child in node.GetChildren)
+                    {
+                        UpdateLodRecursive(faceIndex, child);
+                    }
                 }
-
-                GenerateFace(i);
-
-                ApplyChangesToMesh(i);
+            }
+            else
+            {
+                MergeMesh(faceIndex, node);
             }
         }
 
-        private void ApplyChangesToMesh(int meshIndex)
+
+        public void SubdivideMesh(int faceIndex, QuadNode node)
         {
-
-            Vector2[] uvs = new Vector2[m_meshData.MeshFaces[meshIndex].Vertices.Count];
-            for (int i = 0; i < m_meshData.MeshFaces[meshIndex].Vertices.Count; i++)
+            if (!node.IsLeaf)
             {
-                uvs[i] = new Vector2(m_meshData.MeshFaces[meshIndex].Vertices[i].x, m_meshData.MeshFaces[meshIndex].Vertices[i].z);
+                return;
             }
 
-            if (m_filters[meshIndex].mesh == null)
+            Vector2 min = node.GetMinCoords;
+            Vector2 max = node.GetMaxCoords;
+            Vector2 center = (min + max) / 2f;
+
+            QuadNode[] divisions = new QuadNode[4];
+            divisions[0] = new QuadNode(min, center, node.GetLevel + 1, node.GetMeshFilter.transform, m_planetMaterial);
+            divisions[1] = new QuadNode(new Vector2(center.x, min.y), new Vector2(max.x, center.y), node.GetLevel + 1, node.GetMeshFilter.transform, m_planetMaterial);
+            divisions[2] = new QuadNode(new Vector2(min.x, center.y), new Vector2(center.x, max.y), node.GetLevel + 1, node.GetMeshFilter.transform, m_planetMaterial);
+            divisions[3] = new QuadNode(center, max, node.GetLevel + 1, node.GetMeshFilter.transform, m_planetMaterial);
+
+            for (int i = 0; i < 4; i++)
             {
-                m_filters[meshIndex].mesh = new Mesh();
+                var mesh = GenerateFace(faceIndex, divisions[i]);
+                divisions[i].GetMeshFilter.mesh = mesh;
+                divisions[i].GetMeshCollider.sharedMesh = mesh;
             }
 
-            m_filters[meshIndex].mesh.vertices = m_meshData.MeshFaces[meshIndex].Vertices.ToArray();
-            m_filters[meshIndex].mesh.triangles = GetTrianglesAsIntArray(m_meshData.MeshFaces[meshIndex].Triangles);
-            m_filters[meshIndex].mesh.uv = uvs;
-
-            m_filters[meshIndex].mesh.RecalculateBounds();
-            m_filters[meshIndex].mesh.RecalculateNormals();
+            node.SetChildren(divisions);
         }
 
-
-        private void GenerateCollider()
+        public void MergeMesh(int faceIndex, QuadNode node)
         {
-            var collider = gameObject.AddComponent<MeshCollider>();
-            collider.enabled = true;
-            //collider.sharedMesh = m_filter.mesh;
-            collider.convex = true;
-            collider.isTrigger = false;
+            if (node.IsLeaf)
+            {
+                return;
+            }
+
+            node.DestroyChildren();
+            var mesh = GenerateFace(faceIndex, node);
+            node.GetMeshFilter.mesh = mesh;
+            node.GetMeshCollider.sharedMesh = mesh;
         }
     }
 }

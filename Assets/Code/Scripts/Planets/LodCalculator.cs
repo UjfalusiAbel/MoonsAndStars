@@ -1,8 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MoonsAndStars.Assets.Code.Scripts.Planets
@@ -10,40 +7,34 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
     public class LodCalculator : MonoBehaviour
     {
         [SerializeField] private List<float> m_recalculateDistances;
-        [SerializeField] private float m_radius;
-        [SerializeField] private float m_updateTime;
-        List<PlanetMeshGenerator> m_consideredGenerators = new List<PlanetMeshGenerator>();
-        private Coroutine m_planetVisibilityCheckerRoutine;
-        private Coroutine m_planetLodCheckerRoutine;
+        [SerializeField] private float m_radius = 1000f;
+        [SerializeField] private float m_updateTime = 0.2f;
 
-        public void Start()
-        {
-            m_planetVisibilityCheckerRoutine = StartCoroutine(CheckVisiblePlanets());
-            m_planetLodCheckerRoutine = StartCoroutine(CheckLodOnPlanets());
-        }
+        private List<PlanetMeshGenerator> m_consideredGenerators = new List<PlanetMeshGenerator>();
 
-        public void OnDestroy()
+        private void Start()
         {
-            if (m_planetVisibilityCheckerRoutine != null)
-            {
-                StopCoroutine(m_planetVisibilityCheckerRoutine);
-                StopCoroutine(m_planetLodCheckerRoutine);
-            }
+            StartCoroutine(CheckVisiblePlanets());
+            StartCoroutine(CheckLodOnPlanets());
         }
 
         private IEnumerator CheckVisiblePlanets()
         {
-            while (Application.isPlaying)
+            while (true)
             {
                 Collider[] hits = Physics.OverlapSphere(transform.position, m_radius);
-                
+
                 m_consideredGenerators.Clear();
 
-                foreach (Collider hit in hits)
+                foreach (var hit in hits)
                 {
-                    if (hit.gameObject.tag == "Planet" && hit.TryGetComponent<PlanetMeshGenerator>(out var generator))
+                    if (hit.transform.parent.CompareTag("Planet"))
                     {
-                        m_consideredGenerators.Add(generator);
+                        PlanetMeshGenerator generator = hit.GetComponentInParent<PlanetMeshGenerator>();
+                        if (generator != null && !m_consideredGenerators.Contains(generator))
+                        {
+                            m_consideredGenerators.Add(generator);
+                        }
                     }
                 }
 
@@ -53,29 +44,23 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
 
         private IEnumerator CheckLodOnPlanets()
         {
-            while (Application.isPlaying)
+            while (true)
             {
                 foreach (var generator in m_consideredGenerators)
                 {
-                    int n = m_recalculateDistances.Count;
-                    bool wasDistanceSet = false;
-                    for (int i = 0; i < n; i++)
-                    {
-                        if (Vector3.Distance(transform.position, generator.transform.position) < m_recalculateDistances[n - i - 1])
-                        {
-                            generator.SetRecalculateDistance = m_recalculateDistances[n - i - 1];
-                            wasDistanceSet = true;
-                        }
+                    float selectedDistance = m_radius;
 
-                        if (wasDistanceSet)
+                    foreach (var dist in m_recalculateDistances)
+                    {
+                        if (Vector3.Distance(transform.position, generator.transform.position) < dist)
                         {
+                            selectedDistance = dist;
                             break;
                         }
-                        else
-                        {
-                            generator.SetRecalculateDistance = m_radius;
-                        }
                     }
+
+                    generator.SetRecalculateDistance = selectedDistance;
+                    generator.UpdateLod();
                 }
 
                 yield return new WaitForSeconds(m_updateTime);
