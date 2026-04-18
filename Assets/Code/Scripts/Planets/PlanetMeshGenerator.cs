@@ -16,6 +16,8 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
         [SerializeField] private GameObject m_cameraObject;
         [SerializeField] private Material m_planetMaterial;
         [SerializeField] private int m_maxLevel = 6;
+        [SerializeField] private bool m_isCube;
+        [SerializeField] private bool m_isTerrainApplied;
         private float m_lodDistance = 2f;
         private readonly Vector3[] m_directions = { Vector3.up, Vector3.down, Vector3.right, Vector3.left, Vector3.forward, Vector3.back };
         public float SetRecalculateDistance
@@ -83,10 +85,19 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
                     var offsetB = (uv.x - 0.5f) * 2f;
                     var offsetC = (uv.y - 0.5f) * 2f;
 
-                    var vertexOnCube = a + offsetB * b + offsetC * c;
-                    var vertexOnSphere = CubeToSphere(vertexOnCube);
-                    vertexOnSphere *= m_meshData.PlanetSize;
-                    vertices.Add(vertexOnSphere);
+                    var vertex = a + offsetB * b + offsetC * c;
+                    if (!m_isCube)
+                    {
+                        vertex = CubeToSphere(vertex);
+                    }
+
+                    if(m_isTerrainApplied)
+                    {
+                        vertex = PlanetTerrainGenerator.Singleton.EvaluateSpherePoint(vertex, m_meshData.GetNoiseFilters);
+                    }
+
+                    vertex *= m_meshData.PlanetSize;
+                    vertices.Add(vertex);
 
                     if (x < m_resolution && y < m_resolution)
                     {
