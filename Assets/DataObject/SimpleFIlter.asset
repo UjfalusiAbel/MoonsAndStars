@@ -13,5 +13,7 @@ MonoBehaviour:
   m_Name: SimpleFIlter
   m_EditorClassIdentifier: Assembly-CSharp::MoonsAndStars.Assets.Code.Scripts.Planets.ScriptableObjects.SimpleNoiseFilter
   m_noiseDetails:
-    strength: 5
-    scale: 10
+    numberOfLayers: 4
+    strength: 0.5
+    scale: 2
+    effectiveness: 0.54

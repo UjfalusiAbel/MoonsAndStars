@@ -93,7 +93,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
 
                     if(m_isTerrainApplied)
                     {
-                        vertex = PlanetTerrainGenerator.Singleton.EvaluateSpherePoint(vertex, m_meshData.GetNoiseFilters);
+                        vertex = PlanetTerrainGenerator.Singleton.EvaluateSpherePoint(vertex, m_meshData.GetNoiseConfigurations);
                     }
 
                     vertex *= m_meshData.PlanetSize;

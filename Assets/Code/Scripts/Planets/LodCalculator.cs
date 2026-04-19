@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace MoonsAndStars.Assets.Code.Scripts.Planets
@@ -48,7 +49,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             {
                 foreach (var generator in m_consideredGenerators)
                 {
-                    float selectedDistance = m_radius;
+                    float selectedDistance = m_recalculateDistances.Last();
 
                     foreach (var dist in m_recalculateDistances)
                     {

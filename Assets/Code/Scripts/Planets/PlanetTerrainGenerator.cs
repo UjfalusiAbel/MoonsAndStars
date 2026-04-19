@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MoonsAndStars.Assets.Code.Scripts.Planets.Models.Noise;
 using MoonsAndStars.Assets.Code.Scripts.Planets.ScriptableObjects;
 using UnityEngine;
 
@@ -21,11 +22,11 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             }
         }
 
-        public Vector3 EvaluateSpherePoint(Vector3 point, List<NoiseFilter> filters)
+        public Vector3 EvaluateSpherePoint(Vector3 point, List<NoiseConfiguration> noiseConfigurations)
         {
-            foreach(var filter in filters)
+            foreach(var configuration in noiseConfigurations)
             {
-                point *= 1+filter.EvaluatePoint(point);
+                point *= 1+configuration.filter.EvaluatePoint(point, configuration.details);
             }
 
             return point;
