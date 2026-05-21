@@ -15,7 +15,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets.ScriptableObjects
         {
             float noiseEvaluation = 0f;
             float frequency = 1f;
-            float amplitude = 1f;
+            float amplitude = details.baseAmplitude;
             float amplitudeSum = 0f;
 
             for (int i = 0; i < details.numberOfLayers; i++)
