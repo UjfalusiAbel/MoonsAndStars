@@ -35,6 +35,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets.Models
             renderer.material = nodeMaterial;
             m_meshObject.transform.parent = meshParent;
             m_meshObject.transform.localPosition = Vector3.zero;
+            m_meshObject.tag = "Planet";
         }
 
         public void SetChildren(QuadNode[] children)

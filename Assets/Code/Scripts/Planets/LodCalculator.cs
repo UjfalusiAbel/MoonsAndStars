@@ -24,12 +24,11 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             while (true)
             {
                 Collider[] hits = Physics.OverlapSphere(transform.position, m_radius);
-
                 m_consideredGenerators.Clear();
 
                 foreach (var hit in hits)
                 {
-                    if (hit.transform.parent.CompareTag("Planet"))
+                    if (hit.transform.parent != null && hit.transform.parent.CompareTag("Planet"))
                     {
                         PlanetMeshGenerator generator = hit.GetComponentInParent<PlanetMeshGenerator>();
                         if (generator != null && !m_consideredGenerators.Contains(generator))
