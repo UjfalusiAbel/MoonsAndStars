@@ -15,6 +15,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets.Models
         private MeshFilter m_meshFilter;
         private MeshCollider m_collider;
         private QuadNode[] m_children;
+        
         public Vector2 GetMinCoords => m_minCoords;
         public Vector2 GetMaxCoords => m_maxCoords;
         public int GetLevel => m_level;
@@ -22,6 +23,8 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets.Models
         public MeshCollider GetMeshCollider => m_collider;
         public bool IsLeaf => m_children == null;
         public QuadNode[] GetChildren => m_children;
+        public GameObject GetMeshObject => m_meshObject;
+        
         public QuadNode(Vector2 minCoords, Vector2 maxCoords, int level, Transform meshParent, Material nodeMaterial)
         {
             m_minCoords = minCoords;
@@ -37,26 +40,39 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets.Models
             m_meshObject.transform.localPosition = Vector3.zero;
             m_meshObject.tag = "Planet";
         }
-
+        
         public void SetChildren(QuadNode[] children)
         {
             m_children = children;
             m_meshFilter.mesh = null;
         }
-
+        
         public void DestroyChildren()
         {
             if (m_children == null)
             {
                 return;
             }
-
+            
             foreach (var child in m_children)
             {
                 GameObject.Destroy(child.m_meshObject);
             }
-
+            
             m_children = null;
+        }
+        
+        public void SetVisible(bool visible)
+        {
+            if (m_meshObject != null && m_meshObject.activeSelf != visible)
+            {
+                m_meshObject.SetActive(visible);
+            }
+        }
+        
+        public bool IsVisible()
+        {
+            return m_meshObject != null && m_meshObject.activeSelf;
         }
     }
 }

@@ -46,21 +46,31 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
         {
             while (true)
             {
-                foreach (var generator in m_consideredGenerators)
+                if (m_consideredGenerators != null)
                 {
-                    float selectedDistance = m_recalculateDistances.Last();
-
-                    foreach (var dist in m_recalculateDistances)
+                    for (int i = m_consideredGenerators.Count - 1; i >= 0; i--)
                     {
-                        if (Vector3.Distance(transform.position, generator.transform.position) < dist)
+                        var generator = m_consideredGenerators[i];
+                        if (generator == null || generator.GetMeshData == null || generator.GetMeshData.Roots == null)
                         {
-                            selectedDistance = dist;
-                            break;
+                            m_consideredGenerators.RemoveAt(i);
+                            continue;
                         }
-                    }
 
-                    generator.SetRecalculateDistance = selectedDistance;
-                    generator.UpdateLod();
+                        float selectedDistance = m_recalculateDistances.Last();
+
+                        foreach (var dist in m_recalculateDistances)
+                        {
+                            if (Vector3.Distance(transform.position, generator.transform.position) < dist)
+                            {
+                                selectedDistance = dist;
+                                break;
+                            }
+                        }
+
+                        generator.SetRecalculateDistance = selectedDistance;
+                        generator.UpdateLod();
+                    }
                 }
 
                 yield return new WaitForSeconds(m_updateTime);

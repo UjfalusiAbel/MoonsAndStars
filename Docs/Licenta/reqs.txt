@@ -1,0 +1,17 @@
+14 lap
+2 bibliografia
+cap 3 - design use case diagram, component diagram, sequence diagram, 
+      - implementation, tech stack, diagram de clase, test, validator
+      - ui, ux
+      
+5 parti
+1. naratiune clara, simpla problema de rezolvat, de ce (date statistice), motivatie si relevanta, idei bune - nu sunt idei bune (cercetari existente), cliffhanger, imagini din lucrari (referinta), motivation -> state pf the art 
+3. software implementation - i/o layer, tests,
+
+Alexandru Marinescu
+
+Photon
+frustrum
+octree
+
+analiza - ma misc de la distanta la distanta, profiler, gpu, cpu ram

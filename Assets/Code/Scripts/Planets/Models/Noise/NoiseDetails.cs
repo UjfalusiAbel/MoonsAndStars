@@ -9,11 +9,15 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets.Models.Noise
     [Serializable]
     public class NoiseDetails
     {
-        [Range(1, 6)]
+        [Range(1, 8)]
         public int numberOfLayers;
-        public float baseAmplitude;
+        public float baseRoughness;
+        public float roughness;
         public float strength;
-        public float scale;
-        public float effectiveness;
+        public float persistance;
+        public Vector3 center;
+        public float minValue;
+        public bool isEnabled;
+        public bool useFirstLayerAsMask;
     }
 }

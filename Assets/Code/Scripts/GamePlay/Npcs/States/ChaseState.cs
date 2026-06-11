@@ -38,7 +38,6 @@ namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs.States
 
             float distanceToTarget = Vector3.Distance(_owner.transform.position, _target.transform.position);
 
-            // Switch to attack when in range
             if (distanceToTarget <= _enemyAI.GetAttackRange)
             {
                 Debug.Log($"{_owner.name} in attack range ({distanceToTarget:F1}), switching to Attack");
@@ -54,15 +53,13 @@ namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs.States
                 return;
             }
 
-            // Update target in case a closer player appears
             GameObject closestPlayer = _enemyAI.GetClosestPlayer();
             if (closestPlayer != null && closestPlayer != _target)
             {
                 _target = closestPlayer;
                 _enemyAI.GetMovement.ChaseTarget(_target.transform);
             }
-            
-            // Continue chasing
+    
             _enemyAI.GetMovement.ChaseTarget(_target.transform);
         }
     }

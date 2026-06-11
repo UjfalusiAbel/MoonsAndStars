@@ -50,7 +50,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs
             _currentState.Enter();
         }
 
-        private void Update()
+        public void Update()
         {
             if (_currentState != null)
             {

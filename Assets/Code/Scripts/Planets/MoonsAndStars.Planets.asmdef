@@ -1,0 +1,13 @@
+{
+    "name": "MoonsAndStars.Planets",
+    "references": ["MoonsAndStars.GamePlay"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

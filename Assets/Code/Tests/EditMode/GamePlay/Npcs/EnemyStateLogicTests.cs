@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace MoonsAndStars.Assets.Code.Tests.EditMode
+namespace MoonsAndStars.Assets.Code.Tests.EditMode.GamePlay.Npcs
 {
     [TestFixture]
     public class EnemyStateLogicTests

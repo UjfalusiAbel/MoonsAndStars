@@ -14,24 +14,21 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets.ScriptableObjects
         public override float EvaluatePoint(Vector3 point, NoiseDetails details)
         {
             float noiseEvaluation = 0f;
-            float frequency = 1f;
-            float amplitude = details.baseAmplitude;
-            float amplitudeSum = 0f;
+            float frequency = details.baseRoughness;
+            float amplitude = 1f;
 
             for (int i = 0; i < details.numberOfLayers; i++)
             {
-                Vector3 scaledPoint = point * frequency;
+                Vector3 scaledPoint = point * frequency + details.center;
 
                 float value = m_noise.Evaluate(scaledPoint);
 
-                noiseEvaluation += value * amplitude;
-                amplitudeSum += amplitude;
-
-                frequency *= details.scale;
-                amplitude *= details.effectiveness;
+                noiseEvaluation += (value + 1) * 0.5f * amplitude;
+                frequency *= details.roughness;
+                amplitude *= details.persistance;
             }
 
-            noiseEvaluation /= amplitudeSum;
+            noiseEvaluation = Mathf.Max(0, noiseEvaluation - details.minValue);
 
             return noiseEvaluation * details.strength;
         }

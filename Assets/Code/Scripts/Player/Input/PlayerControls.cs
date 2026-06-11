@@ -96,7 +96,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Player.Input
             ""actions"": [
                 {
                     ""name"": ""Move"",
-                    ""type"": ""Value"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""8bccabe7-ffdf-46b6-9d3f-8a6bb8dc7240"",
                     ""expectedControlType"": ""Axis"",
                     ""processors"": """",
@@ -105,7 +105,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Player.Input
                 },
                 {
                     ""name"": ""Roll"",
-                    ""type"": ""Value"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""efcede1b-b363-4f5b-9dd7-ac0e3ea1dfc1"",
                     ""expectedControlType"": ""Axis"",
                     ""processors"": """",
@@ -132,7 +132,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Player.Input
                 },
                 {
                     ""name"": ""Look"",
-                    ""type"": ""Value"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""e15acd16-c4d0-4619-9d76-940a643cfb46"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
@@ -141,7 +141,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Player.Input
                 },
                 {
                     ""name"": ""Strafe"",
-                    ""type"": ""Value"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""73ccb2c6-bc9b-41d0-9a9b-53677ea52326"",
                     ""expectedControlType"": """",
                     ""processors"": """",
@@ -150,12 +150,12 @@ namespace MoonsAndStars.Assets.Code.Scripts.Player.Input
                 },
                 {
                     ""name"": ""UpDown"",
-                    ""type"": ""Button"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""e091fff0-7f10-441d-85dc-e8df18169426"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
-                    ""initialStateCheck"": false
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -171,9 +171,9 @@ namespace MoonsAndStars.Assets.Code.Scripts.Player.Input
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": ""negative"",
+                    ""name"": ""Positive"",
                     ""id"": ""e9b27c09-5786-4821-b314-670ba9ed732c"",
-                    ""path"": ""<Keyboard>/q"",
+                    ""path"": ""<Keyboard>/e"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -182,9 +182,9 @@ namespace MoonsAndStars.Assets.Code.Scripts.Player.Input
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": ""positive"",
+                    ""name"": ""Negative"",
                     ""id"": ""06c6dfb0-261b-4f5b-bedc-2fd8b7e303e4"",
-                    ""path"": ""<Keyboard>/e"",
+                    ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

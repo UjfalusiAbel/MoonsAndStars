@@ -1,4 +1,8 @@
 ﻿<Solution>
+  <Project Path="MoonsAndStars.GamePlay.csproj" />
+  <Project Path="MoonsAndStars.Planets.csproj" />
+  <Project Path="MoonsAndStars.EditModeTests.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
-  <Project Path="EditMode.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="MoonsAndStars.PlayModeTests.csproj" />
 </Solution>
