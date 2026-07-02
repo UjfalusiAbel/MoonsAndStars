@@ -233,7 +233,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.Planets
             
             if (m_heightColorPairs == null || m_heightColorPairs.Count == 0)
             {
-                Debug.LogError("No height-color pairs defined!");
+                //Debug.LogError("No height-color pairs defined!");
                 return;
             }
             

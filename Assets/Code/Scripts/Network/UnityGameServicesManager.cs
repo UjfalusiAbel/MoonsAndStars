@@ -25,12 +25,16 @@ namespace MoonsAndStars.Assets.Code.Scripts.Multiplayer
         private float _heartbeatTimer;
         private float _lobbyUpdateTimer;
         
+        public string LocalPlayerName { get; private set; } = "Player";
+        public int LocalHostNpcCountConfig { get; private set; } = 0;
+
         public event Action OnSignedIn;
         public event Action OnSignedOut;
         public event Action<Lobby> OnLobbyUpdated;
         public event Action<string> OnJoinCodeReceived;
         public event Action OnLobbyJoined;
         public event Action OnLobbyLeft;
+        public event Action OnSceneLoadComplete;
         
         public bool IsSignedIn => AuthenticationService.Instance.IsSignedIn;
         public Lobby CurrentLobby => _currentLobby;
@@ -47,6 +51,32 @@ namespace MoonsAndStars.Assets.Code.Scripts.Multiplayer
             else
             {
                 Destroy(gameObject);
+            }
+        }
+        
+        private void Start()
+        {
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnServerStarted += SubscribeToSceneManager;
+                NetworkManager.Singleton.OnClientStarted += SubscribeToSceneManager;
+            }
+        }
+
+        private void SubscribeToSceneManager()
+        {
+            if (NetworkManager.Singleton.SceneManager != null)
+            {
+                NetworkManager.Singleton.SceneManager.OnSceneEvent += HandleSceneEvent;
+            }
+        }
+
+        private void HandleSceneEvent(SceneEvent sceneEvent)
+        {
+            if (sceneEvent.SceneEventType == SceneEventType.LoadComplete)
+            {
+                Debug.Log($"[UGS DEBUG] Scene loaded successfully: {sceneEvent.SceneName}");
+                OnSceneLoadComplete?.Invoke();
             }
         }
         
@@ -74,12 +104,20 @@ namespace MoonsAndStars.Assets.Code.Scripts.Multiplayer
         {
             try
             {
-                await UnityServices.InitializeAsync();
+                InitializationOptions options = new InitializationOptions();
+                #if UNITY_EDITOR
+                    options.SetProfile("UnityEditor_User");
+                #else
+                    options.SetProfile($"LinuxBuild_{UnityEngine.Random.Range(1000, 9999)}");
+                #endif
+                options.SetOption("com.unity.services.core.environment-name", "production");
+
+                await UnityServices.InitializeAsync(options);
                 await SignInAnonymously();
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to initialize services: {e.Message}");
+                Debug.LogError($"[UGS CRITICAL ERROR] Failed to initialize services: {e.Message}");
             }
         }
         
@@ -88,22 +126,27 @@ namespace MoonsAndStars.Assets.Code.Scripts.Multiplayer
             try
             {
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
-                Debug.Log($"Signed in as: {AuthenticationService.Instance.PlayerId}");
                 OnSignedIn?.Invoke();
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to sign in: {e.Message}");
+                Debug.LogError($"[UGS AUTH ERROR] Failed to sign in anonymously: {e.Message}");
             }
         }
+
+        public void SetLocalPlayerName(string name)
+        {
+            if (!string.IsNullOrWhiteSpace(name)) LocalPlayerName = name;
+        }
         
-        public async Task<string> CreateLobby(bool isPrivate = false)
+        public async Task<string> CreateLobby(string playerName, bool isPrivate = false)
         {
             try
             {
-                string playerId = AuthenticationService.Instance.PlayerId;
-                string shortId = playerId.Length > 6 ? playerId.Substring(0, 6) : playerId;
-                string playerName = $"Player_{shortId}";
+                if (string.IsNullOrEmpty(playerName)) playerName = $"Player_{UnityEngine.Random.Range(100,999)}";
+
+                Allocation allocation = await RelayService.Instance.CreateAllocationAsync(_maxPlayers);
+                string relayJoinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
                 
                 CreateLobbyOptions options = new CreateLobbyOptions
                 {
@@ -111,79 +154,70 @@ namespace MoonsAndStars.Assets.Code.Scripts.Multiplayer
                     Player = GetPlayer(playerName),
                     Data = new Dictionary<string, DataObject>
                     {
-                        { "Started", new DataObject(DataObject.VisibilityOptions.Public, "False") }
+                        { "Started", new DataObject(DataObject.VisibilityOptions.Public, "False") },
+                        { "RelayJoinCode", new DataObject(DataObject.VisibilityOptions.Member, relayJoinCode) },
+                        { "NpcCount", new DataObject(DataObject.VisibilityOptions.Public, "0") }
                     }
                 };
                 
                 _currentLobby = await LobbyService.Instance.CreateLobbyAsync("GameLobby", _maxPlayers, options);
-                
-                Allocation allocation = await RelayService.Instance.CreateAllocationAsync(_maxPlayers);
-                _joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+                _joinCode = _currentLobby.LobbyCode;
                 
                 var utp = NetworkManager.Singleton.GetComponent<UnityTransport>();
-                
-                // Fix: Use HostConnectionData from allocation
                 utp.SetRelayServerData(
                     allocation.RelayServer.IpV4,
                     (ushort)allocation.RelayServer.Port,
                     allocation.AllocationIdBytes,
                     allocation.Key,
                     allocation.ConnectionData,
-                    allocation.ConnectionData // Use ConnectionData as fallback for HostConnectionData
+                    allocation.ConnectionData 
                 );
                 
                 NetworkManager.Singleton.StartHost();
-                
                 OnJoinCodeReceived?.Invoke(_joinCode);
                 OnLobbyJoined?.Invoke();
                 
-                Debug.Log($"Created lobby with join code: {_joinCode}");
                 return _joinCode;
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to create lobby: {e.Message}");
+                Debug.LogError($"[LOBBY CRITICAL ERROR] Failed to host game via UGS: {e.Message}");
                 return null;
             }
         }
         
-        public async Task JoinLobby(string joinCode)
+        public async Task JoinLobby(string lobbyCode, string playerName)
         {
             try
             {
-                string playerId = AuthenticationService.Instance.PlayerId;
-                string shortId = playerId.Length > 6 ? playerId.Substring(0, 6) : playerId;
-                string playerName = $"Player_{shortId}";
+                if (string.IsNullOrEmpty(playerName)) playerName = $"Player_{UnityEngine.Random.Range(100, 999)}";
                 
-                JoinLobbyByCodeOptions options = new JoinLobbyByCodeOptions
+                JoinLobbyByCodeOptions options = new JoinLobbyByCodeOptions { Player = GetPlayer(playerName) };
+                _currentLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, options);
+                _joinCode = lobbyCode;
+                
+                if (_currentLobby.Data != null && _currentLobby.Data.ContainsKey("RelayJoinCode"))
                 {
-                    Player = GetPlayer(playerName)
-                };
-                
-                _currentLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(joinCode, options);
-                _joinCode = joinCode;
-                
-                JoinAllocation allocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
-                
-                var utp = NetworkManager.Singleton.GetComponent<UnityTransport>();
-                
-                utp.SetRelayServerData(
-                    allocation.RelayServer.IpV4,
-                    (ushort)allocation.RelayServer.Port,
-                    allocation.AllocationIdBytes,
-                    allocation.Key,
-                    allocation.ConnectionData,
-                    allocation.HostConnectionData
-                );
-                
-                NetworkManager.Singleton.StartClient();
-                
-                OnLobbyJoined?.Invoke();
-                Debug.Log($"Joined lobby with code: {joinCode}");
+                    string actualRelayCode = _currentLobby.Data["RelayJoinCode"].Value;
+                    JoinAllocation allocation = await RelayService.Instance.JoinAllocationAsync(actualRelayCode);
+                    
+                    var utp = NetworkManager.Singleton.GetComponent<UnityTransport>();
+                    utp.SetRelayServerData(
+                        allocation.RelayServer.IpV4,
+                        (ushort)allocation.RelayServer.Port,
+                        allocation.AllocationIdBytes,
+                        allocation.Key,
+                        allocation.ConnectionData,
+                        allocation.HostConnectionData
+                    );
+                    
+                    NetworkManager.Singleton.StartClient();
+                    OnLobbyJoined?.Invoke();
+                }
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to join lobby: {e.Message}");
+                Debug.LogError($"[LOBBY JOIN ERROR] Failed to connect to lobby with code {lobbyCode}: {e.Message}");
             }
         }
         
@@ -191,47 +225,38 @@ namespace MoonsAndStars.Assets.Code.Scripts.Multiplayer
         {
             if (_currentLobby != null)
             {
-                try
-                {
-                    await LobbyService.Instance.RemovePlayerAsync(_currentLobby.Id, AuthenticationService.Instance.PlayerId);
-                    _currentLobby = null;
-                    _joinCode = null;
-                    
-                    if (NetworkManager.Singleton != null && (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsClient))
-                    {
-                        NetworkManager.Singleton.Shutdown();
-                    }
-                    
-                    OnLobbyLeft?.Invoke();
-                    Debug.Log("Left lobby");
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"Failed to leave lobby: {e.Message}");
-                }
+                try { await LobbyService.Instance.RemovePlayerAsync(_currentLobby.Id, AuthenticationService.Instance.PlayerId); }
+                catch {}
+                
+                _currentLobby = null;
+                _joinCode = null;
+                if (NetworkManager.Singleton != null) NetworkManager.Singleton.Shutdown();
+                OnLobbyLeft?.Invoke();
             }
         }
         
-        public async Task StartGame()
+        public async Task StartGame(int npcCount)
         {
             if (_currentLobby != null && NetworkManager.Singleton.IsHost)
             {
+                LocalHostNpcCountConfig = npcCount;
+
                 try
                 {
                     await LobbyService.Instance.UpdateLobbyAsync(_currentLobby.Id, new UpdateLobbyOptions
                     {
                         Data = new Dictionary<string, DataObject>
                         {
-                            { "Started", new DataObject(DataObject.VisibilityOptions.Public, "True") }
+                            { "Started", new DataObject(DataObject.VisibilityOptions.Public, "True") },
+                            { "NpcCount", new DataObject(DataObject.VisibilityOptions.Public, npcCount.ToString()) }
                         }
                     });
                     
+                    await Task.Delay(1000);
+
                     NetworkManager.Singleton.SceneManager.LoadScene("Space", UnityEngine.SceneManagement.LoadSceneMode.Single);
                 }
-                catch (Exception e)
-                {
-                    Debug.LogError($"Failed to start game: {e.Message}");
-                }
+                catch (Exception e) { Debug.LogError($"Failed to start game: {e.Message}"); }
             }
         }
         
@@ -239,14 +264,8 @@ namespace MoonsAndStars.Assets.Code.Scripts.Multiplayer
         {
             if (_currentLobby != null && NetworkManager.Singleton.IsHost)
             {
-                try
-                {
-                    await LobbyService.Instance.SendHeartbeatPingAsync(_currentLobby.Id);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"Heartbeat failed: {e.Message}");
-                }
+                try { await LobbyService.Instance.SendHeartbeatPingAsync(_currentLobby.Id); }
+                catch {}
             }
         }
         
@@ -256,22 +275,10 @@ namespace MoonsAndStars.Assets.Code.Scripts.Multiplayer
             {
                 try
                 {
-                    int playerCount = _currentLobby.Players?.Count ?? 0;
-                    UpdateLobbyOptions options = new UpdateLobbyOptions
-                    {
-                        Data = new Dictionary<string, DataObject>
-                        {
-                            { "PlayerCount", new DataObject(DataObject.VisibilityOptions.Public, playerCount.ToString()) }
-                        }
-                    };
-                    
-                    _currentLobby = await LobbyService.Instance.UpdateLobbyAsync(_currentLobby.Id, options);
+                    _currentLobby = await LobbyService.Instance.GetLobbyAsync(_currentLobby.Id);
                     OnLobbyUpdated?.Invoke(_currentLobby);
                 }
-                catch (Exception e)
-                {
-                    Debug.LogError($"Failed to update lobby: {e.Message}");
-                }
+                catch {}
             }
         }
         
@@ -284,6 +291,16 @@ namespace MoonsAndStars.Assets.Code.Scripts.Multiplayer
                     { "PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) }
                 }
             };
+        }
+
+        private void OnDestroy()
+        {
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+            {
+                NetworkManager.Singleton.OnServerStarted -= SubscribeToSceneManager;
+                NetworkManager.Singleton.OnClientStarted -= SubscribeToSceneManager;
+                NetworkManager.Singleton.SceneManager.OnSceneEvent -= HandleSceneEvent;
+            }
         }
     }
 }

@@ -20,7 +20,6 @@ namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs.Helpers
 
         public void Detect()
         {
-            // Limit detection frequency for performance
             if (Time.time - _lastDetectionTime < _detectionInterval) return;
             _lastDetectionTime = Time.time;
 
@@ -37,7 +36,6 @@ namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs.Helpers
                 Vector3 directionToPlayer = (player.transform.position - transform.position).normalized;
                 float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
                 
-                // Angle check
                 bool angleValid = _detectionAngle >= 360f ||  Vector3.Angle(transform.forward, directionToPlayer) <= _detectionAngle / 2f;
                 
                 if (!angleValid) continue;
@@ -61,6 +59,7 @@ namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs.Helpers
                 if (hasLineOfSight)
                 {
                     _detectedPlayers.Add(player);
+                    Debug.LogWarning(player.name);
                 }
             }
         }

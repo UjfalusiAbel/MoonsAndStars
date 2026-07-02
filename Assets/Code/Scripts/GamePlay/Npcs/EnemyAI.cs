@@ -1,6 +1,7 @@
 using MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs.Helpers;
 using MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs.States;
 using MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs.States.Interfaces;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs
@@ -9,14 +10,14 @@ namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs
     [RequireComponent(typeof(PlayerDetector))]
     [RequireComponent(typeof(EnemyMovement))]
     [RequireComponent(typeof(EnemyShooting))]
-    public class EnemyAI : MonoBehaviour
+    public class EnemyAI : NetworkBehaviour
     {
         private IEnemyState _currentState;
 
         [Header("State Settings")]
         [SerializeField] private float _searchDuration = 5f;
-        [SerializeField] private float _attackRange = 30f;   // Attack from 30 units
-        [SerializeField] private float _chaseRange = 150f;   // Chase from up to 150 units
+        [SerializeField] private float _attackRange = 30f;   
+        [SerializeField] private float _chaseRange = 150f;   
 
         private PlayerDetector _playerDetector;
         private EnemyMovement _movement;
@@ -44,14 +45,25 @@ namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs
                 _shooting = gameObject.AddComponent<EnemyShooting>();
         }
 
-        private void Start()
+        // Only start the State Machine on the Server/Host
+        public override void OnNetworkSpawn()
         {
+            if (!IsServer) return; 
+
             _currentState = new SearchState(gameObject, this);
             _currentState.Enter();
         }
 
         public void Update()
         {
+            // CRITICAL MULTIPLAYER GUARD: Only the server calculates AI states!
+            if (!IsServer) return;
+
+            if (_playerDetector != null)
+            {
+                _playerDetector.Detect(); // Fixed global radar tick[cite: 1, 5, 8]
+            }
+
             if (_currentState != null)
             {
                 _currentState.Update();
@@ -60,6 +72,8 @@ namespace MoonsAndStars.Assets.Code.Scripts.GamePlay.Npcs
 
         public void ChangeState(IEnemyState newState)
         {
+            if (!IsServer) return; // Guard state transitions to Server-only
+
             if (_currentState != null)
             {
                 _currentState.Exit();

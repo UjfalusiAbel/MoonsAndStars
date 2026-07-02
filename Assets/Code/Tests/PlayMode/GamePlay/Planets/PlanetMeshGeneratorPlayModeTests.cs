@@ -20,7 +20,6 @@ namespace MoonsAndStars.Assets.Code.Tests.PlayMode.Planets
             _planetObject = new GameObject("TestPlanet");
             _generator = _planetObject.AddComponent<PlanetMeshGenerator>();
             
-            // PlanetMeshData is a regular class, not ScriptableObject
             _meshData = new PlanetMeshData();
             var field = typeof(PlanetMeshGenerator).GetField("m_meshData",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);

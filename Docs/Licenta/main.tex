@@ -24,6 +24,38 @@
 \begin{titlepage}
     \centering
 
+    {\large \textbf{BABEȘ-BOLYAI UNIVERSITY CLUJ-NAPOCA}\par}
+    {\large \textbf{FACULTY OF MATHEMATICS AND COMPUTER SCIENCE}\par}
+    {\large \textbf{SPECIALIZATION COMPUTER SCIENCE IN ENLGISH}\par}
+
+    \vspace{4cm}
+
+    {\Huge \textbf{DIPLOMA THESIS}\par}
+
+    \vspace{2cm}
+
+    {\LARGE \textbf{Moons \& Stars: A game with procedurally generated planets}\par}
+
+    \vfill
+
+    \begin{flushleft}
+        \large \textbf{Supervisor}\\
+        Lect. Dr. Mircea Ioan Gabriel
+    \end{flushleft}
+
+    \vspace{1cm}
+
+    \begin{flushright}
+        \large \textit{Author}\\
+        Ábel Ujfalusi
+    \end{flushright}
+
+\end{titlepage}
+\newpage
+
+\begin{titlepage}
+    \centering
+
     {\large \textbf{UNIVERSITATEA BABEȘ-BOLYAI CLUJ-NAPOCA}\par}
     {\large \textbf{FACULTATEA DE MATEMATICĂ ȘI INFORMATICĂ}\par}
     {\large \textbf{SPECIALIZAREA INFORMATICĂ ENGLEZĂ}\par}
@@ -34,7 +66,7 @@
 
     \vspace{2cm}
 
-    {\LARGE \textbf{Moons \& Stars: A Game with Procedurally Generated Planets}\par}
+    {\LARGE \textbf{Moons \& Stars: Un joc cu planete generate procedural}\par}
 
     \vfill
 
@@ -52,6 +84,7 @@
 
 \end{titlepage}
 \newpage
+
 \thispagestyle{empty}
 \mbox{}
 \newpage
@@ -132,14 +165,35 @@ Finally, these procedurally generated planets will be placed into a complete gam
 
 \section{Previous work}
 
-The application of procedural content generation within commercial game architectures has evolved from an early optimization strategy to a potential fundamental design paradigm. As outlined in the comprehensive survey made by Hendrikx et al. \cite{hendrikx2013}, PCG can be employed across multiple layers of virtual environments: ranging from low-level geometric data to high-level systemic mechanics. The primary driver for modern PCG integration is the mitigation of skyrocketing production costs associated with high-fidelity asset modeling \cite{smelik2014}. Traditional development structures increasingly struggle under the financial burden of manual asset creation, allowing algorithmic synthesis to bridge the resource gap for independent developers who require expansive virtual ecosystems \cite{short2017, korn2017game}. Early foundational mechanics demonstrated by Smith et al. \cite{pcgsmith2012} confirm that when PCG is integrated directly into the core gameplay loop, it can completely redefines spatial exploration and player strategy.
+The application of procedural content generation (PCG) within commercial game architectures has evolved from an early architectural optimization strategy to a fundamental design paradigm. As outlined in the comprehensive survey by Hendrikx et al. \cite{hendrikx2013}, PCG can be systematically employed across multiple layers of virtual environments, ranging from low-level geometric data and raw texture pipelines to high-level systemic mechanics, systemic rulesets, and interactive narratives. The primary driver for modern PCG integration is the mitigation of skyrocketing asset production costs associated with high-fidelity, triple-A asset modeling and scene composition \cite{smelik2014}. 
 
-The core challenge of rendering large scale procedural words is the efficient management of compute and memory resources while also providing the player with pleasing visuals. This requires dynamic level of detail (LOD) systems. The conceptual foundation of hierarchies with multiple resolutions was introduced by Clark \cite{clark1976}, establishing that computation times should scale linearly with visible scene complexity rather than total world geometry. For heightfield rendering and expansive terrain structures, continuous LOD algorithms became standard, allowing seamless mesh transitions to prevent visual popping artifacts \cite{lindstrom1996}. Modern implementations have migrated these approaches onto modern hardware architectures, exploiting GPU-based continuous chunk allocations to optimize real time performance thresholds \cite{hugues2005, Wang2020LevelOD}. In contemporary engine pipelines, these systems rely heavily on quadtree data structures to dynamically subdivide terrain nodes based on their distance to the player camera \cite{wu2010, deaconu2021}.
+Traditional development structures increasingly struggle under the financial and temporal burdens of manual asset creation, allowing algorithmic synthesis to bridge the resource gap for independent developers who require expansive virtual ecosystems without massive creative team overhead \cite{short2017, korn2017game}. Furthermore, this methodology enables a transition from static world layouts to infinitely variable sandbox spaces. Early foundational mechanics demonstrated by Smith et al. \cite{pcgsmith2012} confirm that when algorithmic generation routines are integrated directly into the core gameplay loop rather than treated as a pre-production tool, they completely redefine spatial exploration, pacing, mechanics, and player strategy by ensuring that no two exploration cycles present identical spatial hazards or resource distributions.
 
-Shifting to a sphere geometry from flat terrain often causes distortion if algorithms aren't carefully selected or adapted. Consequently, specific research has focused on alternative grid arrangements, such as the development of novel coordinate systems for constructing balanced spherical grid topologies \cite{lei2020}. To establish cohesive multi-resolution terrain directly on these spherical models, d'Oliveira and Apolinario Jr. \cite{doliveira2018} successfully adapted planetary-scale multi-resolution frameworks tailored for real-time video games. This structural combination allows developers to reconcile macroscopic celestial navigation with localized, high-fidelity ground interaction. A recent comparative analysis by Zechmann and Hlavacs \cite{zechmann2025} systematically evaluates modern procedural planet generators, highlighting the performance tradeoffs between memory overhead and real-time generation speeds across different client architectures.
+The core computational challenge of rendering large-scale procedural worlds is the efficient management of runtime CPU/GPU compute budgets and memory footprints while simultaneously providing the player with a seamless, high-fidelity visual experience. This conflict requires the integration of dynamic Level of Detail (LOD) systems. The conceptual foundation of multi-resolution scene hierarchies was introduced by Clark \cite{clark1976}, establishing that frame computation times should scale linearly with visible, immediate scene complexity rather than total accumulated world geometry. For heightfield rendering and expansive terrain structures, continuous LOD (CLOD) algorithms quickly became the industry standard, introducing real time mesh simplification and edge-matching constraints to prevent jarring visual popping artifacts along boundary seams \cite{lindstrom1996}. 
 
-To inject naturalistic complexity into these spherical meshes, stochastic noise algorithms are universally applied to simulate geological patterns. The historical baseline for this technique remains Perlin noise, introduced by Ken Perlin \cite{perlin1985} to synthesize pseudo-random textures through coherent gradients. This was later optimized into Simplex noise to correct second-order interpolation discontinuities and gradient distribution issues \cite{perlin2002}. Within contemporary terrain pipelines, these noise variants are layered fractally via octaves, altering the overall landscape roughness and lacunarity \cite{rose2016}. As documented in a recent literature review on the evolutionary trajectory of Perlin noise and its mathematical improvements \cite{wu2024}, modern pipelines routinely combine these gradient noise functions with secondary mathematical filters to accurately mimic authentic tectonic and erosive formations.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{ulrich2002superchunks.png}
+    \caption{Hierarchical spatial partitioning grid decoupling continuous landscape geometry into distinct mesh blocks. Source: Adapted from Ulrich \cite{ulrich2002superchunks}.}
+    \label{fig:ulrich_superchunks}
+\end{figure}
 
+Modern implementations have migrated these continuous terrain chunk approaches onto modern hardware architectures, optimizing real time performance thresholds and minimizing draw-call overhead via spatial grouping paradigms like the hierarchical partitioning scheme depicted in Figure~\ref{fig:ulrich_superchunks} \cite{ulrich2002superchunks, hugues2005, Wang2020LevelOD}. In contemporary engine pipelines, these systems rely heavily on nested quadtree data structures to dynamically subdivide, cache, and cull terrain nodes based on their spatial distance and angular orientation relative to the player's active camera frustum \cite{wu2010, deaconu2021}. This hierarchical partitioning allows the system to focus its rendering budget precisely where vertex density is most critical to the viewer.
+
+Shifting from a flat coordinate terrain heightfield to a closed, spherical geometry introduces unique mathematical complications, causing severe spatial distortion and structural pinching at polar coordinates if flat-plane algorithms are applied without modification. Consequently, modern graphics research has focused heavily on alternative coordinate arrangements, such as the development of novel coordinate systems, geodesic subdivisions, and balanced spherical grid topologies to minimize area and angular deformation \cite{lei2020}. To establish cohesive, multi-resolution terrain surfaces directly on these non-linear spherical models, d'Oliveira and Apolinario Jr. \cite{doliveira2018} successfully adapted planetary-scale multi-resolution frameworks tailored specifically for interactive, real time video games.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{doliveira2018_terrain.png}
+    \caption{Multi-resolution planetary terrain reconstruction exhibiting nested patch subdivision logic over a spherical topology. Source: Reprinted from d'Oliveira and Apolinario Jr. \cite{doliveira2018}.}
+    \label{fig:doliveira_terrain}
+\end{figure}
+
+This continuous multi-resolution strategy, visualized from an engine viewport execution perspective in Figure~\ref{fig:doliveira_terrain}, allows developers to reconcile macroscopic celestial navigation across solar systems with localized, high-fidelity ground interaction on a single, continuous geometric canvas \cite{doliveira2018}. A recent comparative analysis by Zechmann and Hlavacs \cite{zechmann2025} systematically evaluates modern procedural planet generators, highlighting the explicit performance trade offs between main-thread memory overhead, runtime vertex pooling, and real time generation speeds across varying hardware client architectures. This analysis confirms that the selection of the underlying quadtree structure directly dictates the runtime scalability of multi-planet tracking loops.
+
+To inject naturalistic complexity into these subdivided spherical meshes, stochastic noise algorithms are universally applied to deform vertex offsets and simulate realistic geological patterns. The historical baseline for this technique remains gradient-based Perlin noise, introduced by Ken Perlin \cite{perlin1985} to synthesize pseudo-random textures through coherent, lattice-bound vectors. This mathematical formulation was later optimized into Simplex noise to explicitly correct the second-order interpolation discontinuities, directional artifacts, and scaling overhead ($O(N^2)$ vs. $O(N 2^N)$ complexity) inherent to the original hypercubic grid design \cite{perlin2002}. 
+
+Within contemporary planetary terrain pipelines, these noise variants are layered fractally via octaves, where successive layers accumulate at higher frequencies and lower amplitudes to alter the overall landscape roughness, lacunarity, and persistence \cite{rose2016}. As documented in a recent literature review on the evolutionary trajectory of Perlin noise and its mathematical improvements \cite{wu2024}, modern pipelines routinely combine these raw gradient noise functions with secondary mathematical filters, absolute-value inversions, and procedural masks to accurately mimic authentic, highly detailed tectonic faults, ridge configurations, and complex hydraulic formations.
 \newpage
 
 \chapter{Theoretical foundations}
@@ -148,7 +202,7 @@ This chapter will present the theoretical concepts and foundations the work is b
 
 \section{Procedural generation in games}
 
-Procedural generation refers to any technique where creation of content happens through algorithms rather than manual work of humans \cite{short2017,rose2016,pcgsmith2012,hendrikx2013}. The technique is long used in video games and is also used in many of the most popular games of the market. It has many different uses that can enhance games in very different ways. It is also often used to provide infinite replayability in open ended games. 
+Procedural generation refers to any technique where creation of content happens through algorithms rather than manual work of humans \cite{short2017,rose2016,pcgsmith2012,hendrikx2013,Viana_dos_Santos_2021}. The technique is long used in video games and is also used in many of the most popular games of the market. It has many different uses that can enhance games in very different ways. It is also often used to provide infinite replayability in open ended games. 
 
 \subsection{Types of procedural content}
 
@@ -171,7 +225,9 @@ For rendering worlds on a planetary scale an effective LOD system is essential, 
 
 On of them is discrete LOD, where we use pre-defined models at varying complexity levels that swap based on distance. Can be very effective for static assets and computationally very lightweight but needs many models, generally all created by hand and is poorly suitable to be used alongside procedural generation;
 
-A good alternative is a continuous LOD system, consisting of dynamic mesh simplification that adjusts the number of triangles inside a mesh in real-time \cite{lindstrom1996}. More complicated to implement and somewhat more resource-intensive but highly adjustable. It is also very suitable to be used alongside procedurally generated content;
+A good alternative is a continuous LOD system, consisting of dynamic mesh simplification that adjusts the number of triangles inside a mesh in real time \cite{lindstrom1996}. More complicated to implement and somewhat more resource-intensive but highly adjustable. It is also very suitable to be used alongside procedurally generated content;
+
+To scale continuous terrain systems to massive or boundless environments, implementations often structure the dynamic surface geometry into a hierarchical spatial partitioning framework composed of independent, simplified mesh blocks or "super-chunks" \cite{ulrich2002superchunks}. This method allows localized patches of the world to adjust their triangle densities independently based on view-dependent metrics without forcing a costly recalculation of the entire global terrain mesh.
 
 A very interesting solution is geometry clipmaps, a technique for rendering large terrains using nested grids centered around the viewer \cite{hugues2005}. This technique, while very CPU-efficient because it treats terrain as a set of scrolling buffers, it can be memory-intensive as it maintains details in a fixed radius regardless of the camera's orientation. Furthermore, it is a technique designed to be used on flat planes, applying it to spheres will result in a serious amount of distortion at the poles.
 
@@ -181,7 +237,7 @@ For spherical geometry, these methods must be adapted to account for the closed 
 
 \section{Sphere mesh generation techniques}
 
-Creating a sphere from triangles is a non-trivial problem in computer graphics. There are many different methods, each with very distinct advantages and trade-offs regarding the distribution of vertices, memory usage and suitability for subdivision-based LOD systems. The work reviews multiple options and also argues why the solution implemented in this work was chosen.
+Creating a sphere from triangles is a non-trivial problem in computer graphics. There are many different methods, each with very distinct advantages and trade offs regarding the distribution of vertices, memory usage and suitability for subdivision-based LOD systems. The work reviews multiple options and also argues why the solution implemented in this work was chosen.
 
 \subsection{UV sphere}
 
@@ -409,7 +465,7 @@ The \texttt{MainMenu} class governs the root entry states, translating user clic
     \label{fig:initial_ui_workflow}
 \end{figure}
 
-Once a player initiates or attempts to join a session, the \texttt{LobbyUIManager} operates as the comprehensive lifecycle coordinator. It controls granular interface nodes including lobby configuration fields like lobby names and visibility toggles, real-time player roster displays, async loading overlays, and modal exception notifications.
+Once a player initiates or attempts to join a session, the \texttt{LobbyUIManager} operates as the comprehensive lifecycle coordinator. It controls granular interface nodes including lobby configuration fields like lobby names and visibility toggles, real time player roster displays, async loading overlays, and modal exception notifications.
 
 To avoid tight coupling, communication between the UI presentation layer and the network layer relies on an asynchronous Observer Pattern. The \texttt{LobbyUIManager} binds directly to backend event streams during its initialization phase in the \texttt{Start} method and guarantees structural sanitation by unbinding during the \texttt{OnDestroy} lifecycle step. When UI interactions occur, such as clicking the creation or join buttons, the application fires asynchronous worker tasks. Textual inputs harvested via Unity's \texttt{TMP\_InputField} elements are processed, capitalized to standardize token compliance, and forwarded to the backend services. 
 
@@ -764,6 +820,48 @@ To make managing these height bands easier, a custom companion interface (\textt
 
 As shown in Figure~\ref{fig:colorizer_editor_inspector}, these configuration tools allow designers to quickly apply pre-configured thematic profiles---including \texttt{EarthLike}, \texttt{Desert}, \texttt{Ice}, \texttt{Volcanic}, \texttt{Ocean}, and \texttt{Jungle}---by modifying color-to-height mappings at runtime. These preset assignments instantly call the manual color allocation routines (\texttt{ManualRecolor()}), updating the active vertex color buffers across all planet patches in the current scene view.
 
+\subsection{Dynamic atmospheric gravity and orbital mechanics}
+\label{subsec:planetary_gravity}
+
+One of the first video games, \texttt{Spacewar!}, developed in 1962 had a clever gravity well feature in it where the players engaged eachother around a star with its gravity pulling on them. This was inside a 2d world, fairly simple by todays standard but still a huge leap forward in the complexity of computational tasks that could be done by computers in 1962 and became a mechanism often recreated in the gaming industry \cite{giddings2017phenomenology}. Moons\&Stars adapts this concepts to a 3D world by the creation of adaptable gravity well around planets.
+
+To transition the generated procedural bodies from purely static visual meshes into interactive objects that influence the physics simulation loop, the engine implements a continuous radial gravity model via the \texttt{GravityWell} component. Because the planetary bodies are built using custom quad-sphere coordinates rather than traditional flat coordinate spaces, standard global down-vector physics acceleration ($-\hat{j} \cdot g$) cannot be used. Instead, each planet serves as an independent center of mass, calculating a unique local attraction vector that changes dynamically based on the actor's distance from the core.
+
+The structural limits of a planet's gravitational influence are defined by three main parameters: the core radius ($R_{\text{planet}}$), a maximum gravity boundary ($R_{\text{max}}$), and a base surface acceleration constant ($g_0 = 9.85\text{ m/s}^2$). During initialization, the component links directly with the adjacent mesh generation pipeline, querying the active \texttt{PlanetMeshGenerator} to dynamically retrieve the exact physical size of the terrain asset:
+\begin{verbatim}
+var generator = GetComponent<PlanetMeshGenerator>();
+if (generator != null && generator.GetMeshData != null) {
+    m_planetRadius = generator.GetMeshData.PlanetSize;
+} else {
+    m_planetRadius = transform.localScale.x * 5f;
+}
+\end{verbatim}
+This runtime linkage ensures that the physical attraction boundary automatically rescales whenever a developer updates the macro-level geometry settings within the planet editor inspector.
+
+To evaluate the acceleration vector acting upon an arbitrary object position ($\vec{P}$), the system calculates a localized displacement vector ($\vec{D}$) relative to the planet's absolute center position ($\vec{C}$):
+\begin{equation}
+\vec{D} = \vec{C} - \vec{P}, \quad d = \|\vec{D}\|, \quad \hat{u}_d = \frac{\vec{D}}{d}
+\end{equation}
+The magnitude of the final acceleration vector ($\vec{a}_{\text{gravity}}$) is governed by an execution gate that evaluates three distinct spatial zones based on the absolute distance value ($d$):
+\begin{equation}
+\vec{a}_{\text{gravity}} = \begin{cases}
+2g_0 \cdot \hat{u}_d, & d < R_{\text{planet}} \\
+\Phi(d) \cdot \hat{u}_d, & R_{\text{planet}} \le d \le R_{\text{max}} \\
+\vec{0}, & d > R_{\text{max}}
+\end{cases}
+\end{equation}
+
+The first zone handles a structural safety fallback. If a physics object passes beneath the procedural crust boundary ($d < R_{\text{planet}}$), the system reverses the gravity logic and doubles the acceleration magnitude along the outward normal. This safety push prevents runaway sinking errors, safely forcing falling actors or rigid bodies back up onto the visible terrain surface. 
+
+For standard interactions within the orbital field ($R_{\text{planet}} \le d \le R_{\text{max}}$), the calculation engine offers two distinct simulation modes managed via a user-defined boolean configuration switch (\texttt{m\_useRealisticGravity}). When realistic gravity is active, the acceleration calculation adheres to a modified inverse-square formulation modeled after classical Newtonian mechanics:
+\begin{equation}
+\Phi_{\text{realistic}}(d) = \frac{g_0}{d^2} \cdot R_{\text{planet}}^2
+\end{equation}
+Alternatively, to allow for stylized space flight mechanics, developers can disable realistic scaling in favor of a normalized blending curve. This mode passes a normalized distance ratio ($t$) into a programmable evaluation asset (\texttt{m\_gravityFalloff}):
+\begin{equation}
+t = \frac{d - R_{\text{planet}}}{R_{\text{max}} - R_{\text{planet}}}, \quad \Phi_{\text{curve}}(d) = g_0 \cdot \text{Curve}(t)
+\end{equation}
+
 \subsection{Testing and verification}
 
 To ensure the structural reliability, mathematical correctness, and architectural stability of the procedural planet generation suite, a comprehensive automated testing framework was implemented using the Unity Test Framework based on the NUnit architecture. Testing operations were cleanly partitioned into two distinct categories consisting of EditMode tests for isolated, deterministic unit testing of algorithms and mathematical transformations, alongside PlayMode tests for verifying interactive runtime behaviors and state configurations requiring engine lifecycle simulation. As part of this validation suite, a total of 30 specialized automated test cases were executed across the planet generation subsystems, yielding a 100\% success pass rate with no runtime exceptions or unexpected failures recorded.
@@ -859,11 +957,11 @@ The \texttt{PlayerDetector} tracking utility provides the entity with environmen
 
 The \texttt{EnemyMovement} locomotion wrapper translates behavioral parameters into localized physical forces to guide flight paths through three-dimensional space. Upon initialization, it alters engine defaults by forcing gravity parameters to an absolute zero state, setting angular damping constraints to 0.5, and defining an asset mass configuration of 100.0 units to eliminate external float errors. The module operates across three explicit states specified by a scoped movement mode enumeration, which includes localized idle functions, point-to-point destination coordinates, and pursuit intercept paths. It regulates translation speeds using a progressive acceleration rating of 5.0 units squared up to a terminal velocity ceiling of 50.0 units per second, automatically implementing multi-axis counter-forces to execute smooth braking stops. Rotational corrections are computed via smooth quaternion angular interpolation routines, capping maximum turning rates at 120.0 degrees per second to simulate realistic vehicular inertia.
 
-The \texttt{EnemyShooting} ballistic wrapper governs tactical weapon capabilities and firing cadences by instantiating individual projectile blueprints at defined barrel transform vectors. The module regulates fire rate cycles via a locked cadence constraint of 2.0 shots per second, monitoring real-time cooldown deltas before allowing firing sequences to execute. When a projectile is generated, the wrapper manually overrides its initial physical states to inject an immediate forward velocity map scaled to a precise speed specification of 50.0 units per second along the calculated trajectory.
+The \texttt{EnemyShooting} ballistic wrapper governs tactical weapon capabilities and firing cadences by instantiating individual projectile blueprints at defined barrel transform vectors. The module regulates fire rate cycles via a locked cadence constraint of 2.0 shots per second, monitoring real time cooldown deltas before allowing firing sequences to execute. When a projectile is generated, the wrapper manually overrides its initial physical states to inject an immediate forward velocity map scaled to a precise speed specification of 50.0 units per second along the calculated trajectory.
 
 The \texttt{IEnemyState} hierarchy establishes the primary behavioral contract through a base abstract template named \texttt{EnemyState}. This structural archetype binds a permanent protected reference to both the root GameObject and the orchestrating machine controller, giving derived classes full visibility over core component APIs. The operational pipeline partitions actions into specialized state scripts. The \texttt{SearchState} processes exploration paths using horizontal unit circle variables to calculate random wander points whenever targets are absent. The \texttt{ChaseState} intercepts targets by overriding acceleration behaviors to charge directly toward active enemy positions. Finally, the \texttt{AttackState} executes lateral strafe vectors based on cross-product computations while implementing predictive lead-time math to fire projectiles ahead of moving targets.
 
-\subsection{State Machine Implementation and Sensor Logic}
+\subsection{State machine implementation and sensor logic}
 
 The foundational routing layer inside the \texttt{EnemyAI} script maps actions dynamically by switching the current runtime context across separate state wrappers that implement the \texttt{IEnemyState} interface. This object-oriented arrangement isolates localized frame modifications, allowing each state to manage its own lifecycle events without causing cross-component contamination. Sensor monitoring is driven by the \texttt{PlayerDetector} class, which manages processing overhead by throttling spatial checks to fixed, non-frame-dependent intervals of 0.2 seconds. This throttling is achieved by tracking a delta time metric against an internal cache timestamp before clearing out old historical array entries. The sensor layer executes an overlap sphere pass matching a designated range of 200.0 units, utilizing a dedicated layer mask matrix to filter out non-target colliders.
 
@@ -873,28 +971,21 @@ When the sensor loop isolates a target collider within its spherical boundary, i
     \centering
     \setlength{\unitlength}{1mm}
     \begin{picture}(160, 45)
-        % Search State Box
         \put(5, 30){\framebox(30, 10)[c]{\shortstack{\textbf{SearchState}\\\footnotesize (Wandering)}}}
         
-        % Chase State Box
         \put(105, 30){\framebox(30, 10)[c]{\shortstack{\textbf{ChaseState}\\\footnotesize (Intercepting)}}}
         
-        % Attack State Box
         \put(45, 2){\framebox(30, 10)[c]{\shortstack{\textbf{AttackState}\\\footnotesize (Predictive Strafe)}}}
         
-        % Forward Transition: Search to Chase
         \put(36, 37){\vector(1, 0){70}}
         \put(44, 39){\footnotesize Player Detected Within Chase Range}
         
-        % Regressive Transition: Chase to Search
         \put(105, 33){\vector(-1, 0){70}}
         \put(43, 29){\footnotesize Target Lost / Exceeds 150 Units}
         
-        % Transition: Chase to Attack
         \put(98, 30){\vector(-3, -2){27}}
         \put(86, 18){\footnotesize Within Range ($ \le $ 30 Units)}
         
-        % Transition: Attack to Search
         \put(45, 7){\vector(-1, 1){22}}
         \put(10, 15){\footnotesize Target Destroyed / Out of Range}
     \end{picture}
@@ -902,11 +993,11 @@ When the sensor loop isolates a target collider within its spherical boundary, i
     \label{fig:ai_lifecycle_flowchart}
 \end{figure}
 
-\subsection{Locomotion and Predictive Flight Physics}
+\subsection{Locomotion and predictive flight physics}
 
 The translation of state trajectories into active physical displacement is handled by the \texttt{EnemyMovement} class, which overrides standard gravitational factors on the entity \texttt{Rigidbody} mass of 100.0 units to ensure smooth flight across three-dimensional space. The component processes a customized movement mode enumeration consisting of idle states, explicit destination vectors, and dedicated pursuit targets. When executing target pursuit vectors, the locomotion loop computes a normalized direction vector separating the entity from its destination. It applies a continuous acceleration factor of 5.0 units squared up to a designated maximum ceiling of 50.0 units per second, calculating and enforcing custom deceleration dampening arrays whenever the system enters an idle braking state. Rotational updates use quaternion look-rotation routines that interpolate the forward transform vector toward targeted directions at a locked maximum rate of 120.0 degrees per second.
 
-During close-range offensive loops within the \texttt{AttackState}, the system switches its flight trajectory to an orbital strafe path to maintain spatial variation and dodge oncoming fire. This behavior evaluates the cross-product of the target relative direction vector against a fixed upward world vector to derive a perpendicular horizontal flight path. The script flips the direction scalar of this perpendicular path every 2.0 seconds via an active timer check to produce a repeating side-to-side sweeping routine. Concurrently, the combat system handles target tracking by referencing the target \texttt{Rigidbody} components to extract real-time velocity vectors. The \texttt{AttackState} computes the estimated projectile intercept time by dividing the scalar distance to the target by a fixed projectile speed of 50.0 units per second. Multiplying the target velocity vector by this calculated lead time allows the script to derive a predicted future coordinate, aiming the weapon trajectory ahead of the target to ensure accurate ballistic interception.
+During close-range offensive loops within the \texttt{AttackState}, the system switches its flight trajectory to an orbital strafe path to maintain spatial variation and dodge oncoming fire. This behavior evaluates the cross-product of the target relative direction vector against a fixed upward world vector to derive a perpendicular horizontal flight path. The script flips the direction scalar of this perpendicular path every 2.0 seconds via an active timer check to produce a repeating side-to-side sweeping routine. Concurrently, the combat system handles target tracking by referencing the target \texttt{Rigidbody} components to extract real time velocity vectors. The \texttt{AttackState} computes the estimated projectile intercept time by dividing the scalar distance to the target by a fixed projectile speed of 50.0 units per second. Multiplying the target velocity vector by this calculated lead time allows the script to derive a predicted future coordinate, aiming the weapon trajectory ahead of the target to ensure accurate ballistic interception.
 
 A comprehensive view of the core methods, structural inputs, and execution signatures defining this modular non-player character artificial intelligence architecture is provided in Table~\ref{tab:npc_ai_methods}.
 
@@ -931,19 +1022,30 @@ A comprehensive view of the core methods, structural inputs, and execution signa
     }
 \end{table}
 
-\chapter{Empirical Performance Evaluation and Visibility Diagnostics}
+\section{Multiplayer architecture and distributed state synchronization}
+\label{sec:multiplayer_architecture}
+
+To expand the procedural ecosystem from an isolated single-player simulation into an interactive, multi-user environment, a dedicated network synchronization layer was designed and integrated. This network architecture is built upon the Unity Netcode for GameObjects framework, operating over a high performance Unity Transport Protocol backend. To ensure seamless peer-to-peer connectivity across restrictive network address translation barriers without compromising simulation security or requiring dedicated player hosting infrastructure, the engine incorporates a cloud-brokered initialization pipeline utilizing Unity Relay and Unity Lobby services.
+
+The system employs a client-server network topology, utilizing a host-client model where one player acts as both the authoritative server and a local client. Session lifecycle management is handled programmatically by the game services manager component, which orchestrates connection tokens, authentication boundaries, and lobby matchmaker advertising state machines. When a session is initiated, the host authenticates with Unity Gaming Services anonymously, requests a unique allocation from the Unity Relay allocation service, and creates a matched entry within the Unity Lobby registry. The initialization sequence begins when the host claims a slot allocation tied to the maximum player capacity of four participants. Upon retrieving a base-64 encoded cryptographic join token from the relay service, the manager updates the transport parameters and binds the server socket abstraction to the specified protocol allocation. These session parameters, alongside slot count metadata, are then serialized into a lobby creation packet and pushed down to the public lobby discovery database. Because the lobby registry drops stale entries automatically, a background tracking coroutine fires a heartbeat ping every fifteen seconds to maintain index visibility while regular slot validation queries keep the client count tightly coupled with the operational engine state. The transport layer is initialized via a network setup script that validates that the manager singleton is structurally bound to a transport component, enforces lifecycle persistence across scene changes via persistence directives, and opens the underlying network sockets.
+
+The fundamental engineering challenge of establishing a multiplayer procedural world lies in network bandwidth conservation. Transmitting raw geometric vertex data, color buffers, or normal-map tables for an active quad-sphere grid across network sockets is unfeasible, as it would cause immediate network buffer exhaustion and packet desynchronization. To overcome this, the architecture utilizes a deterministic parametric replication model. Instead of streaming the physical state of the terrain meshes, the authoritative host synchronizes only the high-level seed structures and state vectors required to mathematically compute the world. Under this paradigm, the server maintains absolute authority over the global pseudorandom generation seeds, the origin coordinate vectors of the active planetary bodies, and player spatial transforms. These primitive data types are serialized into low-bandwidth network variables and lightweight Remote Procedure Calls distributed through the transport pipeline. Upon receiving the global seed parameters during the initial network handshake, each connected client independently executes the hierarchical quad-sphere subdivision algorithms. Because the terrain generation filters are purely deterministic mathematical functions combining simple and ridged noise layers, executing them with identical seed values and spatial coordinates guarantees identical terrain results across all clients, removing the need to transmit heavy terrain geometry data.
+
+Because the transport socket reads, procedure calls, and the quad-sphere engine mesh generation pipelines run synchronously on the main gameplay thread, a strong architectural coupling exists between rendering performance and network synchronization stability. The network layer requires the main game loop to maintain a stable, predictable tick rate to process incoming packet queues and avoid triggering connection timeouts. If local CPU calculations stall due to heavy procedural calculations—such as real time node splitting, high-frequency noise evaluations, or extensive distance-based Level of Detail updates—the main thread cannot process transport packets in time. This structural vulnerability leads to packet accumulation stalls where backlogs build up in the socket buffers, causing sudden updates and visual snapping once the main thread catches up. Furthermore, late inputs from clients cause the server authority checks to fail, triggering sudden position corrections and input processing jitter. If a main-thread rendering stall lasts longer than the designated connection timeout limit, the cloud relay or local heartbeat check flags the client as timed out, causing unexpected disconnections.
+
+\chapter{Empirical performance evaluation and visibility diagnostics}
 \label{ch:performance_evaluation}
 
-To validate the operational scalability, runtime resilience, and optimization integrity of the procedural planet generation engine, a systematic profiling suite was deployed. The primary engineering bottleneck of this architecture centers on the CPU-side computation of procedural vertices, geometric normal calculation, and hierarchical visibility evaluation. Because the generation pipeline deliberately avoids GPU Compute Shader execution in favor of synchronous or main-thread rendering dispatches, evaluating the performance budget of the engine's lifecycle loops is critical to establishing interactive baseline stability.
+To validate the operational scalability, runtime resilience and optimization integrity of the procedural planet generation engine, a systematic profiling suite was deployed. The primary engineering bottleneck of this architecture centers on the CPU-side computation of procedural vertices, geometric normal calculation, and hierarchical visibility evaluation. Because the generation pipeline deliberately avoids GPU Compute Shader execution in favor of synchronous or main-thread rendering dispatches, evaluating the performance budget of the engine's lifecycle loops is critical to establishing interactive baseline stability.
 
-The empirical analysis isolates two primary architectural configurations: a baseline isolated body environment ($N=1$) and an extended multi-body cluster environment ($N=5$). Both settings are profiled under a raw, unculled dispatch regime and a filtered regime governed by the programmatic \texttt{FrustumCuller} subsystem. This multi-variable matrix isolates the mechanical trade-offs between main-thread traversal overhead and vertex-stage backend relief, especially as geometric load scales up under non-compute architectures.
+The empirical analysis isolates two primary architectural configurations: a baseline isolated body environment ($N=1$) and an extended multi body cluster environment ($N=5$). Both settings are profiled under a raw, unculled dispatch regime and a filtered regime governed by the programmatic \texttt{FrustumCuller} subsystem. This multivariable matrix isolates the mechanical trade offs between main-thread traversal overhead and vertex-stage backend relief, especially as geometric load scales up under non-compute architectures.
 
-\section{Methodology and Profiling Environment}
-The profiling data was gathered under strict execution conditions within the Unity engine runtime environment to eliminate transient frame variation. The simulation utilizes an incremental real-time rendering loop to calculate the precise frame processing durations (measured in milliseconds) alongside microsecond-accurate deep-profiling markers hooked into the structural framework. 
+\section{Methodology and profiling environment}
+The profiling data was gathered under strict execution conditions within the Unity engine runtime environment to eliminate transient frame variation. The simulation utilizes an incremental real time rendering loop to calculate the precise frame processing durations (measured in milliseconds) alongside microsecond accurate deep profiling markers hooked into the structural framework. 
 
-The procedural planets are constructed utilizing a quad-sphere topology where each of the six baseline root faces is managed by an independent \texttt{QuadNode} hierarchical tree. The geometric details are evaluated at runtime by passing vertex origins through a coupled layered noise architecture, combining regular fractional Brownian motion via \texttt{SimpleNoiseFilter} configurations and high-frequency terrain ridges via the \texttt{RidgedNoiseFilter} script. Geometry is bound dynamically to standard vertex color buffers and passed down to the graphics backend via the custom \texttt{Custom/UnlitVertexColor} shader pass.
+The procedural planets are constructed utilizing a quad-sphere topology where each of the six baseline root faces is managed by an independent \texttt{QuadNode} hierarchical tree. The geometric details are evaluated at runtime by passing vertex origins through a coupled layered noise architecture, combining regular fractional Brownian motion via \texttt{SimpleNoiseFilter} configurations and high frequency terrain ridges via the \texttt{RidgedNoiseFilter} script. Geometry is bound dynamically to standard vertex color buffers and passed down to the graphics backend via the custom \texttt{Custom/UnlitVertexColor} shader pass.
 
-\section{Frame Time Distribution and Statistical Variance}
+\section{Frame time distribution and statistical variance}
 Initial data interpretation focuses on raw frame render processing intervals. This represents the total elapsed time from the initiation of a frame's lifecycle to its final hardware dispatch. Table~\ref{tab:extended_frame_time_analysis} presents the updated statistical profile across the four target simulation environments.
 
 \begin{table}[htbp]
@@ -961,16 +1063,16 @@ Initial data interpretation focuses on raw frame render processing intervals. Th
     \end{tabular}
 \end{table}
 
-The empirical measurements demonstrate that in low-complexity environments ($N=1$), the absolute mean frame processing durations remain rigidly clustered within a narrow band of $16.51\text{ ms} \le t_{\text{mean}} \le 16.65\text{ ms}$. This satisfies the standard $60\text{ Hz}$ real-time interactive framework boundary ($16.67\text{ ms}$). 
+The empirical measurements demonstrate that in low-complexity environments ($N=1$), the absolute mean frame processing durations remain rigidly clustered within a narrow band of $16.51\text{ ms} \le t_{\text{mean}} \le 16.65\text{ ms}$. This satisfies the standard $60\text{ Hz}$ real time interactive framework boundary ($16.67\text{ ms}$). 
 
 However, a critical scaling bottleneck is exposed when expanding the scene load to a multi-body configuration ($N=5$) without spatial filtration. In the 5 Planets Unculled environment, the mean frame time swells to $23.45\text{ ms}$ ($t_{\text{median}} = 22.80\text{ ms}$), with peak temporal spikes reaching up to $28.40\text{ ms}$. This represents a severe degradation of interactive performance, dropping the fluid frame delivery down to a sub-optimal $\approx 42\text{ Hz}$ regime. 
 
-The introduction of the \texttt{FrustumCuller} component completely mitigates this scaling penalty. Activating frustum filtering drops the 5-planet mean render time back to $17.80\text{ ms}$ ($t_{\text{median}} = 17.63\text{ ms}$), which sits right at the target boundary of standard interactive software architectures.
+The introduction of the \texttt{FrustumCuller} component completely mitigates this scaling penalty. Activating frustum filtering drops the 5 planet mean render time back to $17.80\text{ ms}$ ($t_{\text{median}} = 17.63\text{ ms}$), which sits right at the target boundary of standard interactive software architectures.
 
-\section{Engine Subsystem Lifecycle Loop Breakdown}
+\section{Engine subsystem lifecycle loop breakdown}
 To map out the specific areas within the CPU architecture where processing time is lost, deep profiling markers were assigned to intercept the primary engine execution loops. While the engine's serialization systems (\texttt{EditorLoop}) and graphics driver preparation markers (\texttt{RenderPlayModeViewCameras}) provide stable baselines, tracking the strict simulation execution loop (\texttt{PlayerLoop}) clarifies exactly how visibility calculations affect the main thread.
 
-The \texttt{PlayerLoop} captures real-time transformation changes, player inputs, bounding box updates, and the geometric check loops of the active visibility manager. Table~\ref{tab:player_loop_analysis} outlines the median runtime execution behaviors of this key system module across the testing suite.
+The \texttt{PlayerLoop} captures real time transformation changes, player inputs, bounding box updates, and the geometric check loops of the active visibility manager. Table~\ref{tab:player_loop_analysis} outlines the median runtime execution behaviors of this key system module across the testing suite.
 
 \begin{table}[htbp]
     \centering
@@ -987,13 +1089,13 @@ The \texttt{PlayerLoop} captures real-time transformation changes, player inputs
     \end{tabular}
 \end{table}
 
-\section{Theoretical Analysis and Optimization Diagnostics}
-The relationship between the unculled baselines and the frustum-culled execution profiles provides structural optimization insights regarding non-compute engine rendering frameworks:
+\section{Theoretical analysis and optimization diagnostics}
+The relationship between the unculled baselines and the frustum culled execution profiles provides structural optimization insights regarding non-compute engine rendering frameworks:
 
-\subsection{The Non-Linear Payoff of Visibility Filtering}
+\subsection{The non-linearpayoff of visibility filtering}
 The updated performance metrics highlight a fundamental characteristic of visibility mechanics when working without compute shaders: visibility tasks involve a constant CPU tracking cost that scales linearly with node counts, but they yield a geometric savings in render overhead.
 
-In the single-planet environment, the performance profile shows almost no variation between the baseline and culled runs ($2.33\text{ ms}$ vs. $2.31\text{ ms}$ in the \texttt{PlayerLoop}). At this scale, the processing time saved by omitting hidden vertices from the render pipeline is nearly equal to the time spent executing visibility checks on the CPU's main thread.
+In the 1 planet environment, the performance profile shows almost no variation between the baseline and culled runs ($2.33\text{ ms}$ vs. $2.31\text{ ms}$ in the \texttt{PlayerLoop}). At this scale, the processing time saved by omitting hidden vertices from the render pipeline is nearly equal to the time spent executing visibility checks on the CPU's main thread.
 
 When the workload expands to five planets, however, the unculled \texttt{PlayerLoop} spikes up to $2.84\text{ ms}$. This performance loss is caused by pushing all generated geometry down the graphics pipeline, forcing the CPU to continuously dispatch draw calls for meshes that lie completely outside the camera's view field. 
 
@@ -1005,13 +1107,37 @@ Where $\mathbf{n}_i$ is the plane normal, $\mathbf{c}$ is the center point of th
 
 Even though these geometric calculations run sequentially on the CPU's main loop without thread parallelization, the minor tracking cost ($0.12\text{ ms}$ over the single-planet baseline) is far outweighed by the massive reduction in scene hierarchy overhead and engine rendering dispatches.
 
-\subsection{Ecosystem Stability and Structural Lifecycles}
+\subsection{Ecosystem stability and structural lifecycles}
 When looking across all configurations, the minimum processing time consistently stabilizes near $\approx 9.11\text{ ms} - 9.80\text{ ms}$. This bottom floor represents frames where the camera view is directed away from dense landscape geometry, dropping vertex transformations to a baseline level. 
 
-Conversely, the maximum frame times expose structural performance spikes. When the player's camera triggers distance thresholds, a \texttt{QuadNode} instance splits into four lower-tier child nodes, or collapses up to a parent tier. Because these vertex arrays are generated, normal-mapped, and bound on the main CPU thread without asynchronous compute worker execution, the frame rate exhibits brief spikes (reaching up to $21.34\text{ ms}$ even when culled at scale). 
+Conversely, the maximum frame times expose structural performance spikes. When the player's camera triggers distance thresholds, a \texttt{QuadNode} instance splits into four lower-tier child nodes, or collapses up to a parent tier. Because these vertex arrays are generated, normal mapped, and bound on the main CPU thread without asynchronous compute worker execution, the frame rate exhibits brief spikes (reaching up to $21.34\text{ ms}$ even when culled at scale). 
 
-The fact that the filtered 5-planet maximum time ($21.34\text{ ms}$) remains significantly lower than the unfiltered 5-planet maximum ($28.40\text{ ms}$) proves that frustum filtering does more than just lower average render times; it actively minimizes the severe rendering spikes that can cause visible stuttering during fast camera rotations. This matches the target criteria established during the initial unit and integration testing validation phases.
+The fact that the filtered 5 planet maximum time ($21.34\text{ ms}$) remains significantly lower than the unfiltered 5 planet maximum ($28.40\text{ ms}$) proves that frustum filtering does more than just lower average render times; it actively minimizes the severe rendering spikes that can cause visible stuttering during fast camera rotations. This matches the target criteria established during the initial unit and integration testing validation phases.
 
+\chapter{Conclusion and future work}
+\label{ch:conclusion_future_work}
+
+\section{Summary of the Work}
+
+This thesis has detailed the architectural design, algorithmic foundation, and structural optimization pipelines of \textit{Moons \& Stars}, an interactive multiplayer video game built entirely around procedurally synthesized celestial bodies. By combining advanced procedural content generation paradigms with hierarchical rendering structures, the developed engine successfully resolves the historical tension between macro-scale celestial exploration and micro-scale ground fidelity. The underlying technical framework transitions standard flat-plane heightfield approximations onto a closed, spherical coordinate space by normalising uniform grids into a perfect unit sphere surface prior to topological deformation. This structural approach ensures a uniform vertex distribution while providing a robust geometry pipeline capable of rendering diverse landscapes via data-driven scriptable noise engines.
+
+A core achievement of this implementation is the decoupling of raw coordinate structures from specific planetary themes, achieved through a highly customizable, layered noise synthesis framework. Through the design of specialized implementations of the abstract noise filtering interfaces, the system successfully simulates authentic geographical formations. The integration of multi-octave fractional Brownian motion loops inside standard noise filters allows for the generation of organic plains, rolling hills, and deep ocean beds, while inverted absolute-value calculations within specialized ridged filters form sharp, jagged mountain ranges. This tectonic complexity is further augmented via localized central differences within custom erosion approximations to naturally carve valleys and channels, alongside polygonal cellular distribution maps to establish distinct tectonic faults and basalt-style cellular features. Furthermore, surface rendering is managed via a lightweight unlit vertex-coloring shader program that maps colors straight to the mesh geometry, bypassing the severe main-thread memory footprint and GPU rendering bottlenecks typically caused by streaming unique, high-resolution texture sheets for hundreds of active planetary patches.
+
+Beyond visual synthesis, the work transitions these generated meshes into an active physics and multi-user simulation environment. To govern interactions across the custom non-linear sphere spaces, a radial gravity mechanism calculates real time displacement vectors relative to a planet's center of mass, offering toggleable tracking behaviors between realistic Newtonian inverse-square laws and stylized, curve-blended flight parameters. This planetary ecosystem is synchronized across networked nodes using a strict host-client client-server topology managed via cloud-brokered initialization pipelines and low-bandwidth parametric replication. By synchronizing only high-level global pseudorandom generation seeds and simple player spatial state transforms through remote procedure calls, the architecture enables connected clients to independently compute identical deterministic landscapes. This network design drops bandwidth footprints down to a minimal scaling profile relative to player counts, removing the need to transmit heavy, dynamic terrain geometry buffers across transport sockets.
+
+\section{Limitations and open constraints}
+
+Despite the successful optimization of the procedural pipeline and the minimization of average frame times through targeted culling, several structural and computational constraints remain within the current architecture. The empirical performance profiling data reveals that while visibility filtering reduces baseline thread execution costs to a stable minimum, the system remains vulnerable to brief frame rate spikes during intense camera rotations or sudden player translations. Because the underlying quad-sphere node splitting, normal vector evaluations, and collider recalculations execute synchronously on the main game loop thread, any intensive terrain subdivision cycle creates a temporary performance bottleneck. These rendering stalls disrupt the processing of incoming network packets, leading to visual snapping, inputs failing server authority validation gates, and potential connection timeouts.
+
+Furthermore, the mathematical choice of a quad-sphere layout introduces inherent geometric trade offs. Although mapping a flat grid to a unit sphere offers superior subdivision performance and an intuitive spatial tree structure compared to latitude-longitude rings, it does not achieve completely uniform vertex sizing across the entire sphere surface. The corners of the initial cube topology experience slight area and distance compression when projected outward, creating mild shape distortion and a localized increase in triangle density along the diagonals of the six base quad faces. Additionally, the radial gravity simulation operates under a simplified single body attraction model. Because the system calculates physics vectors independently based on a rigid maximum radius threshold, it cannot natively handle intersecting gravity wells, lagrange balancing regions, or complex multi body tidal deformations without causing conflicting force inputs on a player's physics rigidbody.
+
+\section{Future horizons and expansions}
+
+The open constraints of the current implementation define multiple pathways for subsequent research and engine refinement. The most critical performance enhancement involves migrating the terrain generation and subdivision loops off the main thread entirely. By leveraging asynchronous job systems or offloading high-frequency Simplex noise evaluations, normal map calculations, and vertex adjustments directly onto parallel GPU compute shaders, the main gameplay thread can be insulated from procedural calculations. This change would stabilize frame times across rapid level-of-detail changes, ensuring that critical network socket transport buffers process at a predictable tick rate and preventing client input jitter or accidental cloud relay disconnections.
+
+From a features perspective, the procedural ecosystem could expand to include complex biomes and layered surface layers. Integrating a secondary procedural phase governed by temperature, moisture, and height equations would allow the colorizer components to distribute local elements such as liquid flow paths, realistic foliage placements, and mineral veins, rather than relying solely on vertical elevation bands. On the physics side, the single body model can be upgraded to a vector blended gravitational field system that scales smoothly across overlapping zones of influence, enabling the simulation of realistic orbital trajectories, binary planetary configurations, and smooth transitions between planetary boundaries. Finally, the multiplayer network layer could incorporate progressive client caching and edge-matching algorithms to minimize boundary cracks between adjacent quadtree zones of varying resolution, allowing for higher total player limits and more detailed solar systems.
+
+\bibliographystyle{plain} 
 \bibliography{references}
 
 \end{document}

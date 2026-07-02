@@ -1,156 +1,143 @@
-#pragma kernel EvaluateNoise
+#pragma kernel EvaluateNoiseBatch
 
-struct NoiseInput
+// Simple hash function
+float hash(float3 p)
 {
-    float3 point;
-    float frequency;
-    int layers;
-    float roughness;
-    float persistance;
+    p  = frac(p * 0.3183099 + 0.1);
+    p *= 17.0;
+    return frac(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+
+// Simple noise function
+float noise(float3 p)
+{
+    float3 i = floor(p);
+    float3 f = frac(p);
+    
+    f = f * f * (3.0 - 2.0 * f);
+    
+    float n = 0.0;
+    n += hash(i + float3(0,0,0)) * f.x * f.y * f.z;
+    n += hash(i + float3(1,0,0)) * (1.0 - f.x) * f.y * f.z;
+    n += hash(i + float3(0,1,0)) * f.x * (1.0 - f.y) * f.z;
+    n += hash(i + float3(1,1,0)) * (1.0 - f.x) * (1.0 - f.y) * f.z;
+    n += hash(i + float3(0,0,1)) * f.x * f.y * (1.0 - f.z);
+    n += hash(i + float3(1,0,1)) * (1.0 - f.x) * f.y * (1.0 - f.z);
+    n += hash(i + float3(0,1,1)) * f.x * (1.0 - f.y) * (1.0 - f.z);
+    n += hash(i + float3(1,1,1)) * (1.0 - f.x) * (1.0 - f.y) * (1.0 - f.z);
+    
+    return n;
+}
+
+// Fractal Brownian Motion
+float fbm(float3 p, int octaves, float persistence, float lacunarity)
+{
+    float value = 0.0;
+    float amplitude = 0.5;
+    float frequency = 1.0;
+    float maxValue = 0.0;
+    
+    for (int i = 0; i < octaves; i++)
+    {
+        value += noise(p * frequency) * amplitude;
+        maxValue += amplitude;
+        amplitude *= persistence;
+        frequency *= lacunarity;
+    }
+    
+    return value / maxValue;
+}
+
+// Ridged noise
+float ridged(float3 p, int octaves, float persistence, float lacunarity, float offset, float sharpness)
+{
+    float value = 0.0;
+    float amplitude = 0.5;
+    float frequency = 1.0;
+    float maxValue = 0.0;
+    
+    for (int i = 0; i < octaves; i++)
+    {
+        float n = noise(p * frequency);
+        n = offset - abs(n);
+        n = pow(n, sharpness);
+        value += n * amplitude;
+        maxValue += amplitude;
+        amplitude *= persistence;
+        frequency *= lacunarity;
+    }
+    
+    return value / maxValue;
+}
+
+// Simple noise (single layer)
+float simple(float3 p, float scale)
+{
+    return noise(p * scale);
+}
+
+// ============================================
+// STRUCTS
+// ============================================
+
+struct NoiseConfig
+{
+    float3 pos;
+    int noiseType;
+    int octaves;
+    float persistence;
+    float lacunarity;
     float strength;
     float ridgeOffset;
     float ridgeSharpness;
-    int noiseType;
+    float scale;
+    int enabled;
 };
 
 struct NoiseOutput
 {
-    float value;
+    float val;
 };
 
+// ============================================
+// BUFFERS
+// ============================================
+
 RWStructuredBuffer<NoiseOutput> _Results;
-StructuredBuffer<NoiseInput> _Inputs;
+StructuredBuffer<NoiseConfig> _Configs;
+int _BatchCount;
 
-int _InputCount;
-
-float3 mod289(float3 x) { return x - floor(x / 289.0) * 289.0; }
-float4 mod289(float4 x) { return x - floor(x / 289.0) * 289.0; }
-float4 permute(float4 x) { return mod289((x * 34.0 + 1.0) * x); }
-float4 taylorInvSqrt(float4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-
-float snoise(float3 v)
-{
-    const float2 C = float2(1.0 / 6.0, 1.0 / 3.0);
-    const float4 D = float4(0.0, 0.5, 1.0, 2.0);
-
-    float3 i = floor(v + dot(v, C.yyy));
-    float3 x0 = v - i + dot(i, C.xxx);
-
-    float3 g = step(x0.yzx, x0.xyz);
-    float3 l = 1.0 - g;
-    float3 i1 = min(g.xyz, l.zxy);
-    float3 i2 = max(g.xyz, l.zxy);
-
-    float3 x1 = x0 - i1 + C.xxx;
-    float3 x2 = x0 - i2 + C.yyy;
-    float3 x3 = x0 - D.yyy;
-
-    i = mod289(i);
-    float4 p = permute(permute(permute(i.z + float4(0.0, i1.z, i2.z, 1.0)) + i.y + float4(0.0, i1.y, i2.y, 1.0)) + i.x + float4(0.0, i1.x, i2.x, 1.0));
-    float4 n = p / 7.0;
-
-    n = n - 2.0 * floor(n);
-    float4 t = 0.6 - float4(x0.x, x1.x, x2.x, x3.x) * float4(x0.x, x1.x, x2.x, x3.x) - float4(x0.y, x1.y, x2.y, x3.y) * float4(x0.y, x1.y, x2.y, x3.y) - float4(x0.z, x1.z, x2.z, x3.z) * float4(x0.z, x1.z, x2.z, x3.z);
-    t = max(t, 0.0);
-    t = t * t;
-    t = t * t;
-
-    float4 gx = n * 2.0 - 1.0;
-    float4 gy = abs(gx) - 0.5;
-    float4 gz = abs(gx) - 0.5;
-    float4 gr = gx * gx + gy * gy + gz * gz;
-    gr = rsqrt(gr);
-    gx = gx * gr;
-    gy = gy * gr;
-    gz = gz * gr;
-
-    float4 grad = float4(gx.x * x0.x + gy.x * x0.y + gz.x * x0.z,
-                          gx.y * x1.x + gy.y * x1.y + gz.y * x1.z,
-                          gx.z * x2.x + gy.z * x2.y + gz.z * x2.z,
-                          gx.w * x3.x + gy.w * x3.y + gz.w * x3.z);
-    return 32.0 * dot(t, grad);
-}
-
-float EvaluateSimpleNoise(float3 point, int layers, float baseRoughness, float roughness, float persistance)
-{
-    float result = 0;
-    float amplitude = 1;
-    float frequency = baseRoughness;
-    float maxValue = 0;
-    
-    for (int i = 0; i < layers; i++)
-    {
-        result += snoise(point * frequency) * amplitude;
-        maxValue += amplitude;
-        frequency *= roughness;
-        amplitude *= persistance;
-    }
-    
-    return result / maxValue;
-}
-
-float EvaluateRidgedNoise(float3 point, int layers, float baseRoughness, float roughness, float persistance, float ridgeOffset, float ridgeSharpness)
-{
-    float result = 0;
-    float amplitude = 1;
-    float frequency = baseRoughness;
-    float maxValue = 0;
-    
-    for (int i = 0; i < layers; i++)
-    {
-        float value = snoise(point * frequency);
-        value = ridgeOffset - abs(value);
-        value = pow(value, ridgeSharpness);
-        result += value * amplitude;
-        maxValue += amplitude;
-        frequency *= roughness;
-        amplitude *= persistance;
-    }
-    
-    return result / maxValue;
-}
-
-float EvaluateBillowyNoise(float3 point, int layers, float baseRoughness, float roughness, float persistance, float billowyExponent)
-{
-    float result = 0;
-    float amplitude = 1;
-    float frequency = baseRoughness;
-    float maxValue = 0;
-    
-    for (int i = 0; i < layers; i++)
-    {
-        float value = snoise(point * frequency);
-        value = abs(value);
-        value = pow(value, billowyExponent);
-        result += value * amplitude;
-        maxValue += amplitude;
-        frequency *= roughness;
-        amplitude *= persistance;
-    }
-    
-    return result / maxValue;
-}
+// ============================================
+// KERNEL
+// ============================================
 
 [numthreads(64, 1, 1)]
-void EvaluateNoise(uint3 id : SV_DispatchThreadID)
+void EvaluateNoiseBatch(uint3 id : SV_DispatchThreadID)
 {
-    if (id.x >= _InputCount) return;
+    if (id.x >= _BatchCount) return;
     
-    NoiseInput input = _Inputs[id.x];
-    float result = 0;
+    NoiseConfig cfg = _Configs[id.x];
     
-    if (input.noiseType == 0) // Simple
+    if (cfg.enabled == 0)
     {
-        result = EvaluateSimpleNoise(input.point, input.layers, input.frequency, input.roughness, input.persistance);
-    }
-    else if (input.noiseType == 1) // Ridged
-    {
-        result = EvaluateRidgedNoise(input.point, input.layers, input.frequency, input.roughness, input.persistance, input.ridgeOffset, input.ridgeSharpness);
-    }
-    else if (input.noiseType == 2) // Billowy
-    {
-        result = EvaluateBillowyNoise(input.point, input.layers, input.frequency, input.roughness, input.persistance, input.ridgeSharpness);
+        _Results[id.x].val = 0.0;
+        return;
     }
     
-    _Results[id.x].value = result * input.strength;
+    float result = 0.0;
+    
+    if (cfg.noiseType == 0) // Simple
+    {
+        result = simple(cfg.pos, cfg.scale);
+    }
+    else if (cfg.noiseType == 1) // FBM
+    {
+        result = fbm(cfg.pos, cfg.octaves, cfg.persistence, cfg.lacunarity);
+    }
+    else if (cfg.noiseType == 2) // Ridged
+    {
+        result = ridged(cfg.pos, cfg.octaves, cfg.persistence, cfg.lacunarity, cfg.ridgeOffset, cfg.ridgeSharpness);
+    }
+    
+    _Results[id.x].val = result * cfg.strength;
 }

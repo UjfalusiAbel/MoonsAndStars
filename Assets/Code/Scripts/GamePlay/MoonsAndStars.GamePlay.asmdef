@@ -1,6 +1,9 @@
 {
     "name": "MoonsAndStars.GamePlay",
-    "references": [],
+    "references": [
+        "Unity.Netcode.Runtime",
+        "Unity.Netcode.Components"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

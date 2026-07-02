@@ -25,8 +25,9 @@ namespace MoonsAndStars.Assets.Code.Scripts.Network
                 gameObject.AddComponent<UnityTransport>();
             }
 
+            _networkManager.NetworkConfig.EnableSceneManagement = true;
+
             DontDestroyOnLoad(gameObject);
         }
     }
-
 }

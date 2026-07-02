@@ -1,13 +1,22 @@
 {
     "name": "MoonsAndStars.PlayModeTests",
-    "references": ["MoonsAndStars.GamePlay", "MoonsAndStars.Planets"],
+    "references": [
+        "MoonsAndStars.GamePlay",
+        "MoonsAndStars.Planets",
+        "Unity.Netcode.Runtime",
+        "Unity.Netcode.Components"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
-    "precompiledReferences": [],
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
     "autoReferenced": false,
-    "defineConstraints": ["UNITY_INCLUDE_TESTS"],
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
     "versionDefines": [],
     "noEngineReferences": false,
     "optionalUnityReferences": [
