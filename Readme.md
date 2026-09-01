@@ -7,4 +7,4 @@
 * A quadtree based level of detail system that sections the planet into multiple quadrants recursively or merges these quadrants back together based on the distance to the camera
 * Some simple state machine based AI creatures that can chase the player and shoot at it
 
-  Feel free to use any part of this project
+  ### Feel free to use any part of this project
