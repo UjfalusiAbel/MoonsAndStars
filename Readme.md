@@ -7,4 +7,6 @@
 * A quadtree based level of detail system that sections the planet into multiple quadrants recursively or merges these quadrants back together based on the distance to the camera
 * Some simple state machine based AI creatures that can chase the player and shoot at it
 
-  ### Feel free to use any part of this project
+## Disclaimer
+### Feel free to use any part of this project as you wish but be aware that it might come with bugs and various problems. 
+While the planet generation is working well as that was the main focus of thesis, other aspects might still be unfinished.
